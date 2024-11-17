@@ -1,20 +1,45 @@
-import { useSearchParams } from "next/navigation";
+"use client";
+import { useState, useEffect } from "react";
 
-export default async function CarsPage({ searchParams }) {
-  const page = searchParams?.page || 1; 
+export default function CarsPage({ searchParams }) {
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const page = parseInt(searchParams?.page || 1, 10); // Default to page 1
   const limit = 10;
 
-  const response = await fetch(
-    `https://your-api-url/cars?limit=${limit}&offset=${(page - 1) * limit}`
-  );
-  const cars = await response.json();
+  useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/cars/?limit=${limit}&offset=${(page - 1) * limit}`
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setCars(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCars();
+  }, [page]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Cars</h1>
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-gray-300">
-          <thead>
+          <thead> 
             <tr className="bg-gray-200">
               <th className="border border-gray-300 px-4 py-2">VIN</th>
               <th className="border border-gray-300 px-4 py-2">Make</th>
