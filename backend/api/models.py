@@ -15,8 +15,8 @@ class Cars(models.Model):
     mileage = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=50, blank=True, null=True)
     make = models.ForeignKey('Details', models.DO_NOTHING, db_column='make')
-    model = models.ForeignKey('Details', models.DO_NOTHING, db_column='model', to_field='model', related_name='cars_model_set')
-    year = models.ForeignKey('Details', models.DO_NOTHING, db_column='year', to_field='year', related_name='cars_year_set')
+    model = models.ForeignKey('Details', models.DO_NOTHING, db_column='model', related_name='cars_model_set')
+    year = models.ForeignKey('Details', models.DO_NOTHING, db_column='year', related_name='cars_year_set')
     locationid = models.ForeignKey('Locations', models.DO_NOTHING, db_column='locationID')  # Field name made lowercase.
     lastmodifiedby = models.ForeignKey('Employees', models.DO_NOTHING, db_column='lastModifiedBy')  # Field name made lowercase.
     warrantyid = models.ForeignKey('Warranties', models.DO_NOTHING, db_column='warrantyID', blank=True, null=True)  # Field name made lowercase.
@@ -40,22 +40,40 @@ class Cars(models.Model):
 #         managed = False
 #         db_table = 'Cars'
 
-
 class Details(models.Model):
-    make = models.CharField(primary_key=True, max_length=50)  # The composite primary key (make, model, year) found, that is not supported. The first column is selected.
+    make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
     year = models.IntegerField()
-    numberofcylinders = models.IntegerField(db_column='numberOfCylinders', blank=True, null=True)  # Field name made lowercase.
+    numberofcylinders = models.IntegerField(db_column='numberOfCylinders', blank=True, null=True)
     transmission = models.CharField(max_length=50, blank=True, null=True)
-    drivewheel = models.CharField(db_column='driveWheel', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    drivewheel = models.CharField(db_column='driveWheel', max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
-        db_table = 'Details'
-        unique_together = (('make', 'model', 'year'),)
+        managed = False  # Django will not manage the creation or modification of this table
+        db_table = 'Details'  # Map to the existing 'Details' table in the database
+        unique_together = ('make', 'model', 'year')  # Enforce uniqueness on these fields
         constraints = [
             models.UniqueConstraint(fields=['make', 'model', 'year'], name='unique_details')
         ]
+
+    def __str__(self):
+        return f"{self.make} {self.model} ({self.year})"
+
+# class Details(models.Model):
+#     make = models.CharField(primary_key=True, max_length=50)  # The composite primary key (make, model, year) found, that is not supported. The first column is selected.
+#     model = models.CharField(max_length=50)
+#     year = models.IntegerField()
+#     numberofcylinders = models.IntegerField(db_column='numberOfCylinders', blank=True, null=True)  # Field name made lowercase.
+#     transmission = models.CharField(max_length=50, blank=True, null=True)
+#     drivewheel = models.CharField(db_column='driveWheel', max_length=50, blank=True, null=True)  # Field name made lowercase.
+
+#     class Meta:
+#         managed = False
+#         db_table = 'Details'
+#         unique_together = (('make', 'model', 'year'),)
+        # constraints = [
+        #     models.UniqueConstraint(fields=['make', 'model', 'year'], name='unique_details')
+        # ]
 
 
 class Employees(models.Model):
@@ -85,10 +103,10 @@ class Reviews(models.Model):
     reviewid = models.IntegerField(db_column='reviewID', primary_key=True)  # Field name made lowercase.
     rating = models.IntegerField(blank=True, null=True)
     comment = models.CharField(max_length=1000, blank=True, null=True)
-    details = models.ForeignKey('Details', on_delete=models.DO_NOTHING, db_column='details')
-    # make = models.ForeignKey(Details, models.DO_NOTHING, db_column='make')
-    # model = models.ForeignKey(Details, models.DO_NOTHING, db_column='model', to_field='model', related_name='reviews_model_set')
-    # year = models.ForeignKey(Details, models.DO_NOTHING, db_column='year', to_field='year', related_name='reviews_year_set')
+    # details = models.ForeignKey('Details', on_delete=models.DO_NOTHING, db_column='details')
+    make = models.ForeignKey(Details, models.DO_NOTHING, db_column='make')
+    model = models.ForeignKey(Details, models.DO_NOTHING, db_column='model', related_name='reviews_model_set')
+    year = models.ForeignKey(Details, models.DO_NOTHING, db_column='year', related_name='reviews_year_set')
 
     class Meta:
         managed = False
