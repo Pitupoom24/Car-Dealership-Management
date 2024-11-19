@@ -35,12 +35,12 @@ export default function CarsPage({ searchParams }) {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Cars</h1>
+    <div className="container mx-auto px-5 py-8 text-indigo-950">
+      <h1 className="text-2xl font-bold mb-6 text-center">Dealership Management</h1>
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300">
-          <thead> 
-            <tr className="bg-gray-200">
+        <table className="min-w-full table-auto border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-indigo-100">
               <th className="border border-gray-300 px-4 py-2">VIN</th>
               <th className="border border-gray-300 px-4 py-2">Make</th>
               <th className="border border-gray-300 px-4 py-2">Model</th>
@@ -54,39 +54,62 @@ export default function CarsPage({ searchParams }) {
               <th className="border border-gray-300 px-4 py-2">Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-slate-50">
             {cars.map((car) => (
-              <tr key={car.vin} className="hover:bg-gray-100">
-                <td className="border border-gray-300 px-4 py-2">{car.vin}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.make}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.model}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.year}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.color}</td>
-                <td className="border border-gray-300 px-4 py-2">${car.price}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.mileage} miles</td>
-                <td className="border border-gray-300 px-4 py-2">{car.locationid}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.lastmodifiedby}</td>
-                <td className="border border-gray-300 px-4 py-2">{car.warrantyid}</td>
-                <td className="border border-gray-300 px-4 py-2 capitalize">{car.status}</td>
+              <tr key={car.vin} className="hover:bg-indigo-50">
+                <td className="text-sm border border-gray-300 px-4 py-2 break-words">
+                  {car.vin}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2 capitalize">
+                  {car.make}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2 capitalize">
+                  {car.model}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  {car.year}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2 capitalize">
+                  {car.color}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  ${car.price}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  {car.mileage} miles
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  {car.locationid}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  {car.lastmodifiedby}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  {car.warrantyid}
+                </td>
+                <td className="text-sm border border-gray-300 px-4 py-2 capitalize">
+                  {car.status}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-center mt-4">
         <a
           href={`?page=${Math.max(1, page - 1)}`}
           className={`${
             page <= 1 ? "pointer-events-none opacity-50" : ""
-          } bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600`}
+          } text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300`}
         >
-          Previous
+          &#8592;
         </a>
+        <span className="text-sm font-bold px-3 py-1 mx-1">{page}</span>
         <a
           href={`?page=${page + 1}`}
-          className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+          className="text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300"
         >
-          Next
+          &#8594;
         </a>
       </div>
     </div>
