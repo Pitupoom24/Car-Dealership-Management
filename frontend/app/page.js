@@ -89,7 +89,7 @@ export default function CarsPage({ searchParams }) {
 
   return (
     <div className="container mx-auto px-5 py-8 text-indigo-950">
-      <h1 className="text-2xl font-bold mb-6 text-center">Dealership Management</h1>
+      <h1 className="text-4xl font-bold mb-6 text-center">Dealership Management</h1>
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto border-collapse border border-gray-300">
           <thead>
@@ -124,7 +124,7 @@ export default function CarsPage({ searchParams }) {
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.locationid === null ? "-" : car.locationid}</td>
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.lastmodifiedby === null ? "-" : car.lastmodifiedby}</td>
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.warrantyid === null ? "-" : car.warrantyid}</td>
-                <td className="text-sm border border-gray-300 px-4 py-2 flex gap-2 justify-center">
+                <td className="text-sm border border-gray-300 px-4 py-2 gap-2 justify-center">
                   <button
                     onClick={() => handleEditClick(car)}
                     className="bg-blue-500 text-white px-5 py-1 rounded"
