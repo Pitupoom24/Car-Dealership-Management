@@ -13,7 +13,7 @@
 #     return Response(serializedData)
 
 from django.db import connection
-from rest_framework.decorators import api_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, status
 from .serializer import CarsSerializer
@@ -22,6 +22,97 @@ from .models import *
 class CarsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
     serializer_class = CarsSerializer
+
+
+    # Advanced Query 1
+    @action(detail=False, methods=['GET'])
+    def top_of_list(self, request):
+        query = """
+            SELECT r.make, r.model, r.year, AVG(r.rating) AS averageRating
+            FROM Reviews r
+            GROUP BY r.make, r.model, r.year
+            HAVING AVG(r.rating) >= ALL(
+            SELECT AVG(r.rating)
+            FROM Reviews r
+            GROUP BY r.make, r.model, r.year) AND COUNT(r.rating) >= 3
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+    
+
+    # Advanced Query 2
+    @action(detail=False, methods=['GET'])
+    def vehicle_features_score(self, request):
+        query = """
+            SELECT c.VIN, (COUNT(c.mileage < 150000) + COUNT(c.year>2003) + COUNT(r.rating>=4)) / 3 AS Vehicle_Feature_Score
+            FROM Cars c NATURAL JOIN Reviews r
+            GROUP BY c.VIN
+            ORDER BY c.VIN
+            LIMIT 15
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+    
+
+    # Advanced Query 3
+    @action(detail=False, methods=['GET'])
+    def sales_trend_score(self, request):
+        query = """
+            SELECT c.VIN, temp2.Sales_Trend_Score
+            FROM Cars c NATURAL JOIN
+            (SELECT c.make, c.model, c.year, (COUNT(c.VIN) / temp.total) AS Sales_Trend_Score
+            FROM Cars c JOIN
+            (SELECT c.make, c.model, c.year, COUNT(c.VIN) AS total
+            FROM Cars c GROUP BY c.make, c.model, c.year) AS temp
+            ON (c.make = temp.make AND c.model = temp.model AND c.year = temp.year)
+            WHERE c.status != 'available'
+            GROUP BY c.make, c.model, c.year) AS temp2
+            ORDER BY c.VIN
+            LIMIT 15;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+    
+
+    # Advanced Query 4
+    @action(detail=False, methods=['GET'])
+    def inventory_score(self, request):
+        query = """
+            SELECT c.VIN, temp2.Inventory_Score 
+            FROM Cars c NATURAL JOIN 
+            (SELECT c.make, c.model, c.year, (70* COUNT(c.VIN) / AVG(temp.total_not_sold)) AS Inventory_Score
+            FROM Cars c, 
+            (SELECT COUNT(*) AS total_not_sold
+            FROM Cars c
+            WHERE c.status = 'available') AS temp
+            WHERE c.status = 'available'
+            GROUP BY c.make, c.model, c.year) AS temp2
+            ORDER BY c.VIN
+            LIMIT 15;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+
 
     def list(self, request):
         # Extract query parameters for limit and offset
@@ -37,7 +128,8 @@ class CarsViewSet(viewsets.ViewSet):
             columns = [col[0].lower() for col in cursor.description]  # Extract column names
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]  # Convert rows to dictionaries
 
-        return Response(results)
+        return Response(results, status=status.HTTP_200_OK)
+        
     
     def create(self, request):
         # Extract data from the request
