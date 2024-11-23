@@ -19,22 +19,6 @@ from rest_framework import viewsets, permissions, status
 from .serializer import CarsSerializer
 from .models import *
 
-# @api_view(['GET'])
-# def get_cars(request):
-#     limit = int(request.GET.get('limit', 10))  # Default limit = 10
-#     offset = int(request.GET.get('offset', 0))  # Default offset = 0
-
-#     # Use raw SQL query with limit and offset
-#     query = f"SELECT * FROM Cars LIMIT {limit} OFFSET {offset}"
-
-#     # Execute the raw query
-#     with connection.cursor() as cursor:
-#         cursor.execute(query)
-#         columns = [col[0].lower() for col in cursor.description]  # Extract column names
-#         results = [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-#     return Response(results)
-
 class CarsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
     serializer_class = CarsSerializer
@@ -55,9 +39,6 @@ class CarsViewSet(viewsets.ViewSet):
 
         return Response(results)
     
-
-
-
     def create(self, request):
         # Extract data from the request
         data = request.data
@@ -100,12 +81,13 @@ class CarsViewSet(viewsets.ViewSet):
         # Prepare the update query
         query = """
             UPDATE Cars
-            SET color=%s, price=%s, mileage=%s, status=%s, make=%s, model=%s, year=%s, locationID=%s, lastModifiedBy=%s, warrantyID=%s
+            SET VIN=%s, color=%s, price=%s, mileage=%s, status=%s, make=%s, model=%s, year=%s, locationID=%s, lastModifiedBy=%s, warrantyID=%s
             WHERE VIN=%s
         """
 
         # Prepare the parameters to be updated
         params = [
+            data.get('vin', None),
             data.get('color', None),
             data.get('price', None),
             data.get('mileage', None),
