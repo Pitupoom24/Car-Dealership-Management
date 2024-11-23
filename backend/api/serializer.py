@@ -6,6 +6,11 @@ class CarsSerializer(serializers.ModelSerializer):
         model = Cars
         fields = '__all__'
 
+    def validate_warrantyid(self, value):
+        if value == '':
+            return None  # or raise a ValidationError
+        return value
+
 
 class DetailsSerializer(serializers.ModelSerializer):
     class Meta:
