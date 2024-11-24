@@ -1,37 +1,45 @@
 "use client";
 import { useState, useEffect } from "react";
 
-export default function CarsPage({ searchParams }) {
+export default function CarsPage() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCar, setSelectedCar] = useState(null); // For editing
-  const [showModal, setShowModal] = useState(false); // Modal visibility
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  const page = parseInt(searchParams?.page || 1, 10); // Default to page 1
+  // Get `page` parameter from URL manually
+  const [page, setPage] = useState(1);
   const limit = 10;
 
   useEffect(() => {
-    const fetchCars = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/cars/?limit=${limit}&offset=${(page - 1) * limit}`
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setCars(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const params = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(params.get("page") || "1", 10);
+    setPage(currentPage);
+  }, []);
 
+  const fetchCars = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/cars/?limit=${limit}&offset=${(page - 1) * limit}`
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setCars(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchCars();
   }, [page]);
+
 
   const handleEditClick = (car) => {
     setSelectedCar(car);
