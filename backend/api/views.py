@@ -1,17 +1,3 @@
-# from django.shortcuts import render
-# from rest_framework.decorators import api_view
-# from rest_framework.response import Response
-# from rest_framework import status
-# from .models import Cars
-# from .serializer import CarsSerializer
-
-# # # Create your views here.
-# @api_view(['GET'])                  # GET >> read data
-# def get_cars(request):
-#     cars = Cars.objects.raw('SELECT * FROM Cars LIMIT 10')
-#     serializedData = CarsSerializer(cars, many=True).data      # since books = array of object (so many!)
-#     return Response(serializedData)
-
 from django.db import connection
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -529,6 +515,103 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             cursor.execute(query)
             columns = [col[0].lower() for col in cursor.description]
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+    
+    # For Search Bar
+    def list(self, request):
+
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+
+        data = request.GET
+
+        make = data.get('make')
+        model = data.get('model')
+        year = data.get('year')
+        numberofcylinders = data.get('numberofcylinders')
+        transmission = data.get('transmission')
+        drivewheel = data.get('drivewheel')
+        vin = data.get('vin')
+        color = data.get('color')
+        lower_price = data.get('lower_price')
+        higher_price = data.get('higher_price')
+        lower_mileage = data.get('lower_mileage')
+        higher_mileage = data.get('higher_mileage')
+        _status = data.get('status')
+        locationid = data.get('locationid')
+        lastmodifiedby = data.get('lastmodifiedby')
+        rating = data.get('rating')
+
+        # INSERT INTO Warranties before using; otherwise, delete JOIN Warranties ...
+        query = f"""
+            SELECT *
+            FROM Cars c JOIN Details d ON c.make=d.make AND c.model=d.model AND c.year=d.year 
+                JOIN Warranties w ON c.warrantyID=w.warrantyID
+                JOIN Reviews r ON r.make=d.make AND r.model=d.model AND r.year=d.year
+                JOIN Employees e ON c.lastModifiedBy=e.employeeID
+                JOIN Locations l ON l.locationID=c.locationID 
+            WHERE 411=411
+        """
+        parameters = []
+
+        # Dynamically add conditions
+        if make:
+            query += " AND d.make=%s"
+            parameters.append(make)
+        if model:
+            query += " AND d.model=%s"
+            parameters.append(model)
+        if year:
+            query += " AND d.year=%s"
+            parameters.append(year)
+        if numberofcylinders:
+            query += " AND d.numberofcylinders=%s"
+            parameters.append(numberofcylinders)
+        if transmission:
+            query += " AND d.transmission=%s"
+            parameters.append(transmission)
+        if drivewheel:
+            query += " AND d.drivewheel=%s"
+            parameters.append(drivewheel)
+        if vin:
+            query += " AND vin=%s"
+            parameters.append(vin)
+        if color:
+            query += " AND color=%s"
+            parameters.append(color)
+        if lower_price:
+            query += " AND price >= %s"
+            parameters.append(lower_price)
+        if higher_price:
+            query += " AND price <= %s"
+            parameters.append(higher_price)
+        if lower_mileage:
+            query += " AND mileage >= %s"
+            parameters.append(lower_mileage)
+        if higher_mileage:
+            query += " AND mileage <= %s"
+            parameters.append(higher_mileage)
+        if _status:
+            query += " AND status=%s"
+            parameters.append(_status)
+        if locationid:
+            query += " AND locationid=%s"
+            parameters.append(locationid)
+        if lastmodifiedby:
+            query += " AND lastmodifiedby=%s"
+            parameters.append(lastmodifiedby)
+        if rating:
+            query += " AND rating=%s"
+            parameters.append(rating)
+
+        query += f" LIMIT {limit}"
+        query += f" OFFSET {offset}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, parameters)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()] 
 
         return Response(results, status=status.HTTP_200_OK)
     
