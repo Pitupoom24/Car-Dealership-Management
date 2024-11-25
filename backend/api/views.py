@@ -519,6 +519,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
         return Response(results, status=status.HTTP_200_OK)
     
     # For Search Bar
+    # ex http://127.0.0.1:8000/api/advanced_queries/?make=bmw&limit=10&higher_year=2005&lower_rating=2&higher_rating=4
     def list(self, request):
 
         limit = int(request.GET.get('limit', 10))
@@ -528,8 +529,10 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
 
         make = data.get('make')
         model = data.get('model')
-        year = data.get('year')
-        numberofcylinders = data.get('numberofcylinders')
+        lower_year = data.get('lower_year')
+        higher_year = data.get('higher_year')
+        lower_numberofcylinders = data.get('lower_numberofcylinders')
+        higher_numberofcylinders = data.get('higher_numberofcylinders')
         transmission = data.get('transmission')
         drivewheel = data.get('drivewheel')
         vin = data.get('vin')
@@ -541,33 +544,46 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
         _status = data.get('status')
         locationid = data.get('locationid')
         lastmodifiedby = data.get('lastmodifiedby')
-        rating = data.get('rating')
+        lower_rating = data.get('lower_rating')
+        higher_rating = data.get('higher_rating')
 
-        # INSERT INTO Warranties before using; otherwise, delete JOIN Warranties ...
+
         query = f"""
-            SELECT *
-            FROM Cars c JOIN Details d ON c.make=d.make AND c.model=d.model AND c.year=d.year 
-                JOIN Warranties w ON c.warrantyID=w.warrantyID
-                JOIN Reviews r ON r.make=d.make AND r.model=d.model AND r.year=d.year
-                JOIN Employees e ON c.lastModifiedBy=e.employeeID
-                JOIN Locations l ON l.locationID=c.locationID 
+            SELECT c.vin, c.make, c.model, c.year, c.color, c.price, c.mileage, c.status, c.locationid, c.lastmodifiedby, c.warrantyid, r.averageRating
+            FROM Cars c
+                LEFT JOIN Details d ON c.make=d.make AND c.model=d.model AND c.year=d.year 
+                LEFT JOIN 
+                (
+                SELECT AVG(re.rating) AS averageRating, re.make, re.model, re.year
+                FROM Reviews re
+                GROUP BY re.make, re.model, re.year
+                ) AS r ON r.make=d.make AND r.model=d.model AND r.year=d.year
+                LEFT JOIN Employees e ON c.lastModifiedBy=e.employeeID
+                LEFT JOIN Locations l ON l.locationID=c.locationID
+                LEFT JOIN Warranties w ON w.warrantyID=c.warrantyID
             WHERE 411=411
         """
+
         parameters = []
 
-        # Dynamically add conditions
         if make:
-            query += " AND d.make=%s"
+            query += " AND c.make=%s"
             parameters.append(make)
         if model:
-            query += " AND d.model=%s"
+            query += " AND c.model=%s"
             parameters.append(model)
-        if year:
-            query += " AND d.year=%s"
-            parameters.append(year)
-        if numberofcylinders:
-            query += " AND d.numberofcylinders=%s"
-            parameters.append(numberofcylinders)
+        if lower_year:
+            query += " AND c.year>=%s"
+            parameters.append(lower_year)
+        if higher_year:
+            query += " AND c.year<=%s"
+            parameters.append(higher_year)
+        if lower_numberofcylinders:
+            query += " AND d.numberofcylinders>=%s"
+            parameters.append(lower_numberofcylinders)
+        if higher_numberofcylinders:
+            query += " AND d.numberofcylinders<=%s"
+            parameters.append(higher_numberofcylinders)
         if transmission:
             query += " AND d.transmission=%s"
             parameters.append(transmission)
@@ -601,9 +617,12 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
         if lastmodifiedby:
             query += " AND lastmodifiedby=%s"
             parameters.append(lastmodifiedby)
-        if rating:
-            query += " AND rating=%s"
-            parameters.append(rating)
+        if lower_rating:
+            query += " AND averageRating >= %s"
+            parameters.append(lower_rating)
+        if higher_rating:
+            query += " AND averageRating <= %s"
+            parameters.append(higher_rating)
 
         query += f" LIMIT {limit}"
         query += f" OFFSET {offset}"
@@ -614,8 +633,3 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             results = [dict(zip(columns, row)) for row in cursor.fetchall()] 
 
         return Response(results, status=status.HTTP_200_OK)
-    
-
-
-
-
