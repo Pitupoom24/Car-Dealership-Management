@@ -134,7 +134,7 @@ export default function CarsPage() {
 
   return (
     <div className="container mx-auto px-5 py-8 text-indigo-950">
-      <h1 className="text-4xl font-bold mb-6 text-center">Dealership Management</h1>
+      <h1 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Dealership Management</h1>
 
       {/* FORM */}
       <form
@@ -189,7 +189,7 @@ export default function CarsPage() {
 
       <button
         type="submit"
-        className="col-span-1 md:col-span-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 "
       >
         Search
       </button>
@@ -219,7 +219,7 @@ export default function CarsPage() {
             {cars.map((car) => (
               <tr key={car.vin} className="hover:bg-indigo-50 text-center">
                 {/* Table Data */}
-                <td className="text-sm border border-gray-300 px-4 py-2">
+                <td className="text-sm text-center bg-gradient-to-r from-black to-black bg-clip-text text-transparent border border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
                   <Link href={{
                     pathname: '/details',
                     query:
