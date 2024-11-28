@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from 'next/link';
 
 export default function CarsPage() {
   const [cars, setCars] = useState([]);
@@ -218,7 +219,16 @@ export default function CarsPage() {
             {cars.map((car) => (
               <tr key={car.vin} className="hover:bg-indigo-50 text-center">
                 {/* Table Data */}
-                <td className="text-sm border border-gray-300 px-4 py-2">{car.vin}</td>
+                <td className="text-sm border border-gray-300 px-4 py-2">
+                  <Link href={{
+                    pathname: '/details',
+                    query:
+                    {
+                      make: car.make,
+                      model: car.model,
+                      year: car.year
+                    }
+                    }}>{car.vin}</Link></td>
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.make === null ? "-" : car.make}</td>
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.model === null ? "-" : car.model}</td>
                 <td className="text-sm border border-gray-300 px-4 py-2">{car.year === null ? "-" : car.year}</td>
@@ -238,6 +248,7 @@ export default function CarsPage() {
                   </button>
                 </td>
               </tr>
+              
             ))}
           </tbody>
         </table>
