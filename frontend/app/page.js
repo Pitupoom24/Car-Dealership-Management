@@ -7,23 +7,45 @@ export default function CarsPage() {
   const [error, setError] = useState(null);
   const [selectedCar, setSelectedCar] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [formData, setFormData] = useState({
+    make: "",
+    model: "",
+    lower_year: "",
+    higher_year: "",
+    lower_numberofcylinders: "",
+    higher_numberofcylinders: "",
+    transmission: "",
+    drivewheel: "",
+    vin: "",
+    color: "",
+    lower_price: "",
+    higher_price: "",
+    lower_mileage: "",
+    higher_mileage: "",
+    status: "",
+    locationid: "",
+    lower_rating: "",
+    higher_rating: "",
+  });
 
   // Get `page` parameter from URL manually
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const currentPage = parseInt(params.get("page") || "1", 10);
-    setPage(currentPage);
-  }, []);
-
   const fetchCars = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/cars/?limit=${limit}&offset=${(page - 1) * limit}`
-      );
+
+      var url = `http://127.0.0.1:8000/api/advanced_queries/?limit=${limit}&offset=${(page - 1) * limit}`;
+
+      for (const [key, value] of Object.entries(formData)) {
+        if (value !== "") {
+          url += `&${key}=${value}`;
+        }
+      }
+
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
@@ -38,7 +60,7 @@ export default function CarsPage() {
 
   useEffect(() => {
     fetchCars();
-  }, [page]);
+  }, [page, searchQuery]);
 
 
   const handleEditClick = (car) => {
@@ -92,12 +114,87 @@ export default function CarsPage() {
     }
   };
 
+
+  // Search Bar
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchQuery(e);
+    setPage(1);
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+
 
   return (
     <div className="container mx-auto px-5 py-8 text-indigo-950">
       <h1 className="text-4xl font-bold mb-6 text-center">Dealership Management</h1>
+
+      {/* FORM */}
+      <form
+      onSubmit={handleSearch}
+      className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-100 rounded shadow-lg"
+    >
+      {[
+        "make",
+        "model",
+        "transmission",
+        "drivewheel",
+        "vin",
+        "color",
+        "status",
+        "locationid",
+      ].map((field) => (
+        <div key={field} className="flex flex-col">
+          <label className="text-sm font-semibold mb-1 capitalize">{field}</label>
+          <input
+            type="text"
+            name={field}
+            value={formData[field]}
+            onChange={handleChange}
+            className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      ))}
+
+      {[
+        { name: "lower_year", label: "Lower Year" },
+        { name: "higher_year", label: "Higher Year" },
+        { name: "lower_numberofcylinders", label: "Lower Cylinders" },
+        { name: "higher_numberofcylinders", label: "Higher Cylinders" },
+        { name: "lower_price", label: "Lower Price" },
+        { name: "higher_price", label: "Higher Price" },
+        { name: "lower_mileage", label: "Lower Mileage" },
+        { name: "higher_mileage", label: "Higher Mileage" },
+        { name: "lower_rating", label: "Lower Rating" },
+        { name: "higher_rating", label: "Higher Rating" },
+      ].map((field) => (
+        <div key={field.name} className="flex flex-col">
+          <label className="text-sm font-semibold mb-1">{field.label}</label>
+          <input
+            type="number"
+            name={field.name}
+            value={formData[field.name]}
+            onChange={handleChange}
+            className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      ))}
+
+      <button
+        type="submit"
+        className="col-span-1 md:col-span-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      >
+        Search
+      </button>
+    </form>
+
+      {/* DISPLAYED TABLE */}
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto border-collapse border border-gray-300">
           <thead>
@@ -148,21 +245,23 @@ export default function CarsPage() {
 
       {/* Pagination */}
       <div className="flex justify-center mt-4">
-        <a
-          href={`?page=${Math.max(1, page - 1)}`}
+        <button
+          // href={`?page=${Math.max(1, page - 1)}`}
+          onClick={()=>setPage(Math.max(1, page - 1))}
           className={`${
             page <= 1 ? "pointer-events-none opacity-50" : ""
           } text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300`}
         >
           &#8592;
-        </a>
+        </button>
         <span className="text-sm font-bold px-3 py-1 mx-1">{page}</span>
-        <a
-          href={`?page=${page + 1}`}
+        <button
+          // href={`?page=${page + 1}`}
+          onClick={()=>setPage(page + 1)}
           className="text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300"
         >
           &#8594;
-        </a>
+        </button>
       </div>
 
       {/* Modal for Editing */}

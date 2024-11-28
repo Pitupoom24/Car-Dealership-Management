@@ -591,7 +591,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             query += " AND d.drivewheel=%s"
             parameters.append(drivewheel)
         if vin:
-            query += " AND vin=%s"
+            query += " AND c.vin=%s"
             parameters.append(vin)
         if color:
             query += " AND color=%s"
