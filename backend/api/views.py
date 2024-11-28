@@ -633,3 +633,58 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             results = [dict(zip(columns, row)) for row in cursor.fetchall()] 
 
         return Response(results, status=status.HTTP_200_OK)
+    
+
+############################################################################################################
+############################################# Advanced Queries #############################################
+############################################################################################################
+class UsersViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request):
+        data = request.data
+        
+        query = """
+            INSERT INTO Employees (employeeID, firstName, lastName , email, password, locationID) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+    
+        params = [
+            data.get('employeeid'),
+            data.get('firstName'), 
+            data.get('lastName'), 
+            data.get('email'), 
+            data.get('password'), 
+            data.get('locationid'), 
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+    
+
+    # ex http://127.0.0.1:8000/api/users/login/?employeeid=1&password=smithjosh123
+    @action(detail=False, methods=['GET'], url_path='login')
+    def login(self, request):
+        employeeid = request.GET.get('employeeid')
+        password = request.GET.get('password')
+
+        # if is_valid = 1, it's valid. Otherwise, it's invalid
+        query = """
+            SELECT e.employeeID, COUNT(*) AS is_valid
+            FROM Employees e
+            WHERE e.employeeID = %s AND e.password = %s
+        """
+
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [employeeid, password]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            user_data = dict(zip(columns, result))
+            return Response(user_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"result": "user/password is not correct"}, status=status.HTTP_404_NOT_FOUND)

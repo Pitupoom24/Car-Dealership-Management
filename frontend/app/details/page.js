@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 export default function DetailsPage() {
   const searchParams = useSearchParams();
 
-  // Access the query parameters
   const make = searchParams.get("make");
   const model = searchParams.get("model");
   const year = searchParams.get("year");
