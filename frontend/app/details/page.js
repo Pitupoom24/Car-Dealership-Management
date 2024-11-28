@@ -68,13 +68,9 @@ export default function DetailsPage() {
     return <div>Error: {error}</div>;
   }
 
-  if (!carDetails) {
-    return <div>No details found for this car.</div>;
-  }
-
   return (
     <div>
-      <h1 className="text-5xl font-bold text-center text-blue-800 my-6">
+      <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-blue-800 to-purple-400 bg-clip-text text-transparent my-6">
         Details
       </h1>
       <div className="space-y-6">
@@ -82,48 +78,49 @@ export default function DetailsPage() {
           carDetails.map((car) => (
             <div
               key={car.id}
-              className="mx-28 bg-blue-100 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+              className="mx-28 bg-gradient-to-r from-purple-200 to-purple-400 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+
             >
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Make:{" "}
-                <span className="font-normal text-gray-500">{car.make}</span>
+                <span className="font-normal">{car.make}</span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Model:{" "}
-                <span className="font-normal text-gray-500">{car.model}</span>
+                <span className="font-normal">{car.model}</span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Year:{" "}
-                <span className="font-normal text-gray-500">{car.year}</span>
+                <span className="font-normal">{car.year}</span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Number of Cylinders:{" "}
-                <span className="font-normal text-gray-500">
+                <span className="font-normal">
                   {car.numberofcylinders}
                 </span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Transmission:{" "}
-                <span className="font-normal text-gray-500">
+                <span className="font-normal">
                   {car.transmission}
                 </span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Drive Wheel:{" "}
-                <span className="font-normal text-gray-500">
+                <span className="font-normal">
                   {car.drivewheel}
                 </span>
               </p>
             </div>
           ))
         ) : (
-          <div className="mx-28 bg-green-100 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+          <div className="mx-28 bg-gradient-to-r from-purple-200 to-purple-400 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
             <p className="text-center">No details available.</p>
           </div>
         )}
       </div>
 
-      <h1 className="text-5xl font-bold text-center text-green-800 mt-20 mb-6">
+      <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-green-800 to-green-400 bg-clip-text text-transparent mt-20 mb-6">
         Reviews
       </h1>
       <div className="space-y-6">
@@ -131,26 +128,26 @@ export default function DetailsPage() {
           carReviews.map((car) => (
             <div
               key={car.reviewid}
-              className="mx-28 bg-green-100 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+              className="mx-28 bg-gradient-to-r from-green-200 to-green-400 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
             >
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Review ID:{" "}
-                <span className="font-normal text-gray-500">
+                <span className="font-normal">
                   {car.reviewid}
                 </span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Rating:{" "}
-                <span className="font-normal text-gray-500">{car.rating}</span>
+                <span className="font-normal">{car.rating}</span>
               </p>
-              <p className="text-xl font-semibold text-gray-700">
+              <p className="text-xl font-semibold">
                 Comment:{" "}
-                <span className="font-normal text-gray-500">{car.comment}</span>
+                <span className="font-normal">{car.comment}</span>
               </p>
             </div>
           ))
         ) : (
-          <div className="mx-28 bg-green-100 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+          <div className="mx-28 bg-gradient-to-r from-green-200 to-green-400 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
             <p className="text-center">No reviews available.</p>
           </div>
         )}
