@@ -557,7 +557,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
                 SELECT AVG(re.rating) AS averageRating, re.make, re.model, re.year
                 FROM Reviews re
                 GROUP BY re.make, re.model, re.year
-                ) AS r ON r.make=d.make AND r.model=d.model AND r.year=d.year
+                ) AS r ON r.make=c.make AND r.model=c.model AND r.year=c.year
                 LEFT JOIN Employees e ON c.lastModifiedBy=e.employeeID
                 LEFT JOIN Locations l ON l.locationID=c.locationID
                 LEFT JOIN Warranties w ON w.warrantyID=c.warrantyID
@@ -591,7 +591,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             query += " AND d.drivewheel=%s"
             parameters.append(drivewheel)
         if vin:
-            query += " AND vin=%s"
+            query += " AND c.vin=%s"
             parameters.append(vin)
         if color:
             query += " AND color=%s"
