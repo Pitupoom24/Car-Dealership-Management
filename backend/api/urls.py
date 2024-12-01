@@ -8,6 +8,8 @@ router.register('reviews', ReviewsViewSet, basename='reviews')
 router.register('details', DetailsViewSet, basename='details')
 router.register('advanced_queries', AdvancedQueriesViewSet, basename='advanced_queries')
 router.register('users', UsersViewSet, basename='users')
+router.register('employees', EmployeesViewSet, basename='employees')
+router.register('locations', LocationsViewSet, basename='locations')
 urlpatterns = router.urls
 
 
