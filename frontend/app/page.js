@@ -9,6 +9,7 @@ export default function CarsPage() {
   const [selectedCar, setSelectedCar] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -28,6 +29,18 @@ export default function CarsPage() {
     locationid: "",
     lower_rating: "",
     higher_rating: "",
+  });
+  const [createData, setCreateData] = useState({
+    vin: "",
+    make: "",
+    model: "",
+    year: "",
+    color: "",
+    price: "",
+    mileage: "",
+    status: "",
+    locationid: "",
+    warrantyid: "",
   });
 
   const [currentEmployeeID, setCurrentEmployeeID] = useState(null);
@@ -96,16 +109,19 @@ export default function CarsPage() {
         throw new Error("Failed to delete the car.");
       }
       setCars((prevCars) => prevCars.filter((car) => car.vin !== vin));
+      setShowModal(false);
     } catch (err) {
       alert(err.message);
     }
   };
 
+  // Edit Modal
   const handleModalClose = () => {
     setSelectedCar(null);
     setShowModal(false);
   };
 
+  // Save Button in Edit Modal
   const handleSave = async () => {
     try {
       const response = await fetch(
@@ -143,12 +159,62 @@ export default function CarsPage() {
     setPage(1);
   };
 
+  const handleAddForm = async () => {
+    if (
+      createData.vin == "" ||
+      createData.make == "" ||
+      createData.model == "" ||
+      createData.year == ""
+    ) {
+      alert("Please fill in all required fields: VIN, Make, Model, and Year.");
+      return;
+    }
+
+    const dataToSubmit_create = {
+      ...createData,
+      lastmodifiedby: currentEmployeeID, // Add the employee ID
+    };
+
+    if (dataToSubmit_create.warrantyid == ""){
+      dataToSubmit_create.warrantyid = null;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/cars/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSubmit_create),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create a new car.");
+      }
+      const createdCar = await response.json();
+      setCars((prevCars) => [...prevCars, createdCar]);
+      setShowAddModal(false);
+      setCreateData({
+        vin: "",
+        make: "",
+        model: "",
+        year: "",
+        color: "",
+        price: "",
+        mileage: "",
+        status: "",
+        locationid: "",
+        warrantyid: "",
+      });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-5 py-8 text-indigo-950">
-      
       {/* Logged in already */}
       {isCurrentlyLoggedIn && (
         <div className="flex flex-col items-end space-y-2">
@@ -186,9 +252,10 @@ export default function CarsPage() {
 
       {/* FORM */}
       <form
-        onSubmit={handleSearch}
+        onSubmit={(e) => handleSearch(e)}
         className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-100 rounded shadow-lg"
       >
+        {/* Input fields */}
         {[
           "make",
           "model",
@@ -213,6 +280,7 @@ export default function CarsPage() {
           </div>
         ))}
 
+        {/* Number inputs */}
         {[
           { name: "lower_year", label: "Lower Year" },
           { name: "higher_year", label: "Higher Year" },
@@ -237,9 +305,42 @@ export default function CarsPage() {
           </div>
         ))}
 
+        {/* Other buttons */}
+        <div className="col-span-1 md:col-span-1 flex flex-wrap justify-evenly items-center">
+          <button
+            type="button" // Prevents form submission
+            onClick={() => setShowAddModal(true)}
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Add New Car
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Top of List
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Adjust Prices
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Advanced Search
+          </button>
+        </div>
+
+        {/* Submit button */}
         <button
-          type="submit"
-          className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 "
+          type="submit" // This triggers the onSubmit handler
+          className="col-span-1 md:col-span-1 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Search
         </button>
@@ -349,141 +450,43 @@ export default function CarsPage() {
       </div>
 
       {/* Modal for Editing */}
+
       {showModal && selectedCar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white py-6 px-12 rounded shadow-md">
             <h2 className="text-lg font-bold mb-4 text-center">Edit Car</h2>
             <form className="grid grid-cols-2 gap-4">
-              <label className="block mb-2">
-                Make:
-                <input
-                  type="text"
-                  value={selectedCar.make}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      make: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Model:
-                <input
-                  type="text"
-                  value={selectedCar.model}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      model: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Year:
-                <input
-                  type="text"
-                  value={selectedCar.year}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      year: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Color:
-                <input
-                  type="text"
-                  value={selectedCar.color}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      color: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Price:
-                <input
-                  type="number"
-                  value={selectedCar.price}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      price: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Mileage:
-                <input
-                  type="number"
-                  value={selectedCar.mileage}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      mileage: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Status:
-                <input
-                  type="text"
-                  value={selectedCar.status}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      status: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Location ID:
-                <input
-                  type="number"
-                  value={selectedCar.locationid}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      locationid: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Warranty ID:
-                <input
-                  type="number"
-                  value={selectedCar.warrantyid}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      warrantyid: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
+              {[
+                { label: "Make", key: "make", type: "text" },
+                { label: "Model", key: "model", type: "text" },
+                { label: "Year", key: "year", type: "text" },
+                { label: "Color", key: "color", type: "text" },
+                { label: "Price", key: "price", type: "number" },
+                { label: "Mileage", key: "mileage", type: "number" },
+                { label: "Status", key: "status", type: "text" },
+                { label: "Location ID", key: "locationid", type: "number" },
+                { label: "Warranty ID", key: "warrantyid", type: "number" },
+              ].map((field) => (
+                <label key={field.key} className="block mb-2">
+                  {field.label}:
+                  <input
+                    type={field.type}
+                    value={selectedCar[field.key] || ""}
+                    onChange={(e) =>
+                      setSelectedCar({
+                        ...selectedCar,
+                        [field.key]:
+                          e.target.value === "" ? null : e.target.value,
+                      })
+                    }
+                    className="border px-2 py-1 w-full"
+                  />
+                </label>
+              ))}
             </form>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                onClick={() => handleDeleteClick(car.vin)}
+                onClick={() => handleDeleteClick(selectedCar.vin)}
                 className="bg-red-500 text-white px-2 py-1 rounded mr-auto"
               >
                 Delete
@@ -499,6 +502,57 @@ export default function CarsPage() {
                 className="bg-green-500 text-white px-3 py-1 rounded"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white py-6 px-12 rounded shadow-md">
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Create New Car
+            </h2>
+            <form className="grid grid-cols-2 gap-4">
+              {[
+                { label: "VIN", name: "vin" },
+                { label: "Make", name: "make" },
+                { label: "Model", name: "model" },
+                { label: "Year", name: "year" },
+                { label: "Color", name: "color" },
+                { label: "Price", name: "price" },
+                { label: "Mileage", name: "mileage" },
+                { label: "Status", name: "status" },
+                { label: "Location ID", name: "locationid" },
+                { label: "Warranty ID", name: "warrantyid" },
+              ].map((field) => (
+                <label key={field.name} className="block mb-2">
+                  {field.label}:
+                  <input
+                    type="text"
+                    name={field.name}
+                    value={createData[field.name]}
+                    onChange={(e) =>
+                      setCreateData({ ...createData, [field.name]: e.target.value })
+                    }
+                    className="border px-2 py-1 w-full"
+                  />
+                </label>
+              ))}
+            </form>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="bg-gray-500 text-white px-3 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddForm}
+                className="bg-green-500 text-white px-3 py-1 rounded"
+              >
+                Add
               </button>
             </div>
           </div>
