@@ -30,6 +30,18 @@ export default function CarsPage() {
     lower_rating: "",
     higher_rating: "",
   });
+  const [createData, setCreateData] = useState({
+    vin: "",
+    make: "",
+    model: "",
+    year: "",
+    color: "",
+    price: "",
+    mileage: "",
+    status: "",
+    locationid: "",
+    warrantyid: "",
+  });
 
   const [currentEmployeeID, setCurrentEmployeeID] = useState(null);
   const [isCurrentlyLoggedIn, setIsCurrentlyLoggedIn] = useState(false);
@@ -97,16 +109,19 @@ export default function CarsPage() {
         throw new Error("Failed to delete the car.");
       }
       setCars((prevCars) => prevCars.filter((car) => car.vin !== vin));
+      setShowModal(false);
     } catch (err) {
       alert(err.message);
     }
   };
 
+  // Edit Modal
   const handleModalClose = () => {
     setSelectedCar(null);
     setShowModal(false);
   };
 
+  // Save Button in Edit Modal
   const handleSave = async () => {
     try {
       const response = await fetch(
@@ -146,27 +161,31 @@ export default function CarsPage() {
 
   const handleAddForm = async () => {
     if (
-      !formData.vin ||
-      !formData.make ||
-      !formData.model ||
-      !formData.lower_year
+      createData.vin == "" ||
+      createData.make == "" ||
+      createData.model == "" ||
+      createData.year == ""
     ) {
       alert("Please fill in all required fields: VIN, Make, Model, and Year.");
       return;
     }
 
-    const dataToSubmit = {
-      ...formData,
+    const dataToSubmit_create = {
+      ...createData,
       lastmodifiedby: currentEmployeeID, // Add the employee ID
     };
 
+    if (dataToSubmit_create.warrantyid == ""){
+      dataToSubmit_create.warrantyid = null;
+    }
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/cars/create", {
+      const response = await fetch("http://127.0.0.1:8000/api/cars/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataToSubmit),
+        body: JSON.stringify(dataToSubmit_create),
       });
       if (!response.ok) {
         throw new Error("Failed to create a new car.");
@@ -174,25 +193,17 @@ export default function CarsPage() {
       const createdCar = await response.json();
       setCars((prevCars) => [...prevCars, createdCar]);
       setShowAddModal(false);
-      setFormData({
+      setCreateData({
+        vin: "",
         make: "",
         model: "",
-        lower_year: "",
-        higher_year: "",
-        lower_numberofcylinders: "",
-        higher_numberofcylinders: "",
-        transmission: "",
-        drivewheel: "",
-        vin: "",
+        year: "",
         color: "",
-        lower_price: "",
-        higher_price: "",
-        lower_mileage: "",
-        higher_mileage: "",
+        price: "",
+        mileage: "",
         status: "",
         locationid: "",
-        lower_rating: "",
-        higher_rating: "",
+        warrantyid: "",
       });
     } catch (err) {
       alert(err.message);
@@ -241,9 +252,10 @@ export default function CarsPage() {
 
       {/* FORM */}
       <form
-        onSubmit={handleSearch}
+        onSubmit={(e) => handleSearch(e)}
         className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-100 rounded shadow-lg"
       >
+        {/* Input fields */}
         {[
           "make",
           "model",
@@ -268,6 +280,7 @@ export default function CarsPage() {
           </div>
         ))}
 
+        {/* Number inputs */}
         {[
           { name: "lower_year", label: "Lower Year" },
           { name: "higher_year", label: "Higher Year" },
@@ -292,22 +305,46 @@ export default function CarsPage() {
           </div>
         ))}
 
+        {/* Other buttons */}
+        <div className="col-span-1 md:col-span-1 flex flex-wrap justify-evenly items-center">
+          <button
+            type="button" // Prevents form submission
+            onClick={() => setShowAddModal(true)}
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Add New Car
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Top of List
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Adjust Prices
+          </button>
+
+          <button
+            type="button" // Prevents form submission
+            className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
+          >
+            Advanced Search
+          </button>
+        </div>
+
+        {/* Submit button */}
         <button
-          type="submit"
-          className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 "
+          type="submit" // This triggers the onSubmit handler
+          className="col-span-1 md:col-span-1 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Search
         </button>
       </form>
-
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 "
-        >
-          Add New Car
-        </button>
-      </div>
 
       {/* DISPLAYED TABLE */}
       <div className="overflow-x-auto">
@@ -449,7 +486,7 @@ export default function CarsPage() {
             </form>
             <div className="mt-4 flex justify-end gap-2">
               <button
-                onClick={() => handleDeleteClick(car.vin)}
+                onClick={() => handleDeleteClick(selectedCar.vin)}
                 className="bg-red-500 text-white px-2 py-1 rounded mr-auto"
               >
                 Delete
@@ -495,9 +532,9 @@ export default function CarsPage() {
                   <input
                     type="text"
                     name={field.name}
-                    value={formData[field.name]}
+                    value={createData[field.name]}
                     onChange={(e) =>
-                      setFormData({ ...formData, [field.name]: e.target.value })
+                      setCreateData({ ...createData, [field.name]: e.target.value })
                     }
                     className="border px-2 py-1 w-full"
                   />
