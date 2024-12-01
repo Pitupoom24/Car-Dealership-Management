@@ -688,3 +688,51 @@ class UsersViewSet(viewsets.ViewSet):
             return Response(user_data, status=status.HTTP_200_OK)
         else:
             return Response({"result": "user/password is not correct"}, status=status.HTTP_404_NOT_FOUND)
+
+############################################################################################################
+################################################ Employees #################################################
+############################################################################################################
+class EmployeesViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def retrieve(self, request, pk=None):
+        query = """
+            SELECT *
+            FROM Employees e
+            WHERE e.employeeID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            employee_data = dict(zip(columns, result))
+            return Response(employee_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+############################################################################################################
+################################################ Locations #################################################
+############################################################################################################
+class LocationsViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def retrieve(self, request, pk=None):
+        query = """
+            SELECT *
+            FROM Locations l
+            WHERE l.locationID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            location_data = dict(zip(columns, result))
+            return Response(location_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Location not found."}, status=status.HTTP_404_NOT_FOUND)
