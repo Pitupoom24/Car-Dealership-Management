@@ -9,6 +9,7 @@ export default function CarsPage() {
   const [selectedCar, setSelectedCar] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -143,10 +144,61 @@ export default function CarsPage() {
     setPage(1);
   };
 
+  const handleAddForm = async () => {
+    if (!formData.vin || !formData.make || !formData.model || !formData.lower_year) {
+      alert("Please fill in all required fields: VIN, Make, Model, and Year.");
+      return;
+    }
+    
+    const dataToSubmit = {
+    ...formData,
+    lastmodifiedby: currentEmployeeID, // Add the employee ID
+  };
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/cars/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSubmit),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create a new car.");
+      }
+      const createdCar = await response.json();
+      setCars((prevCars) => [...prevCars, createdCar]);
+      setShowAddModal(false);
+      setFormData({
+        make: "",
+        model: "",
+        lower_year: "",
+        higher_year: "",
+        lower_numberofcylinders: "",
+        higher_numberofcylinders: "",
+        transmission: "",
+        drivewheel: "",
+        vin: "",
+        color: "",
+        lower_price: "",
+        higher_price: "",
+        lower_mileage: "",
+        higher_mileage: "",
+        status: "",
+        locationid: "",
+        lower_rating: "",
+        higher_rating: "",
+      });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
+    
     <div className="container mx-auto px-5 py-8 text-indigo-950">
       
       {/* Logged in already */}
@@ -244,6 +296,64 @@ export default function CarsPage() {
           Search
         </button>
       </form>
+
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-6 py-2 text-white bg-green-500 rounded-lg shadow-lg hover:bg-green-600"
+        >
+          Add New Car
+        </button>
+      </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white py-6 px-12 rounded shadow-md">
+            <h2 className="text-lg font-bold mb-4 text-center">Create New Car</h2>
+            <form className="grid grid-cols-2 gap-4">
+              {[
+                { label: "VIN", name: "vin" },
+                { label: "Make", name: "make" },
+                { label: "Model", name: "model" },
+                { label: "Year", name: "lower_year" },
+                { label: "Color", name: "color" },
+                { label: "Price", name: "lower_price" },
+                { label: "Mileage", name: "lower_mileage" },
+                { label: "Status", name: "status" },
+                { label: "Location ID", name: "locationid" },
+                { label: "Warranty ID", name: "warrantyid" },
+              ].map((field) => (
+                <label key={field.name} className="block mb-2">
+                  {field.label}:
+                  <input
+                    type="text"
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.value })
+                    }
+                    className="border px-2 py-1 w-full"
+                  />
+                </label>
+              ))}
+            </form>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="bg-gray-500 text-white px-3 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddForm}
+                className="bg-green-500 text-white px-3 py-1 rounded"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DISPLAYED TABLE */}
       <div className="overflow-x-auto">
