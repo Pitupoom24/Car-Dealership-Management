@@ -22,9 +22,9 @@ class EmployeesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employees
         fields = '__all__'
-        extra_kwargs = {
-            'password': {'write_only': True},  # Passwords should not be returned in API responses
-        }
+        # extra_kwargs = {
+        #     'password': {'write_only': True},  # Passwords should not be returned in API responses
+        # }
 
 
 class LocationsSerializer(serializers.ModelSerializer):
