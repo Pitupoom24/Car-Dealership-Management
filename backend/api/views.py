@@ -518,6 +518,45 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
 
         return Response(results, status=status.HTTP_200_OK)
     
+    ##################################################
+    ##################################################
+    ##################################################
+    # Combined Advanced Queries - calculate the total score
+    # ex http://127.0.0.1:8000/api/advanced_queries/total_score/?weight1=0.2&weight2=0.3&weight3=0.1&weight4=0.4&higher_price=5000&higher_mileage=150000&transmission=Automatic&drivewheel=Front&limit=10&offset=0
+    @action(detail=False, methods=['GET'], url_path='total_score')
+    def total_score(self, request):
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+
+        data = request.GET
+
+        params = (
+            data.get('weight1'),
+            data.get('weight2'),
+            data.get('weight3'),
+            data.get('weight4'),
+            data.get('higher_price'),
+            data.get('higher_mileage'),
+            data.get('transmission'),
+            data.get('drivewheel'),
+        )
+
+        with connection.cursor() as cursor:
+            cursor.execute("CALL VehicleDisplayOptimizer(%s, %s, %s, %s, %s, %s, %s, %s);", params)
+
+            cursor.execute("""
+                SELECT *
+                FROM Cars c NATURAL JOIN TempDisplayScores s
+                ORDER BY s.totalScore DESC
+                LIMIT %s
+                OFFSET %s;
+            """, (limit, offset))
+
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+    
     # For Search Bar
     # ex http://127.0.0.1:8000/api/advanced_queries/?make=bmw&limit=10&higher_year=2005&lower_rating=2&higher_rating=4
     def list(self, request):
@@ -636,9 +675,10 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
     
 
 ############################################################################################################
-############################################# Advanced Queries #############################################
+############################################### User Queries ###############################################
 ############################################################################################################
 class UsersViewSet(viewsets.ViewSet):
+
     permission_classes = [permissions.AllowAny]
 
     def create(self, request):
