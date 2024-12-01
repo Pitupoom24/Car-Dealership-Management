@@ -145,15 +145,20 @@ export default function CarsPage() {
   };
 
   const handleAddForm = async () => {
-    if (!formData.vin || !formData.make || !formData.model || !formData.lower_year) {
+    if (
+      !formData.vin ||
+      !formData.make ||
+      !formData.model ||
+      !formData.lower_year
+    ) {
       alert("Please fill in all required fields: VIN, Make, Model, and Year.");
       return;
     }
-    
+
     const dataToSubmit = {
-    ...formData,
-    lastmodifiedby: currentEmployeeID, // Add the employee ID
-  };
+      ...formData,
+      lastmodifiedby: currentEmployeeID, // Add the employee ID
+    };
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/cars/create", {
@@ -198,9 +203,7 @@ export default function CarsPage() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    
     <div className="container mx-auto px-5 py-8 text-indigo-950">
-      
       {/* Logged in already */}
       {isCurrentlyLoggedIn && (
         <div className="flex flex-col items-end space-y-2">
@@ -300,60 +303,11 @@ export default function CarsPage() {
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-6 py-2 text-white bg-green-500 rounded-lg shadow-lg hover:bg-green-600"
+          className="col-span-1 md:col-span-2 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 "
         >
           Add New Car
         </button>
       </div>
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white py-6 px-12 rounded shadow-md">
-            <h2 className="text-lg font-bold mb-4 text-center">Create New Car</h2>
-            <form className="grid grid-cols-2 gap-4">
-              {[
-                { label: "VIN", name: "vin" },
-                { label: "Make", name: "make" },
-                { label: "Model", name: "model" },
-                { label: "Year", name: "lower_year" },
-                { label: "Color", name: "color" },
-                { label: "Price", name: "lower_price" },
-                { label: "Mileage", name: "lower_mileage" },
-                { label: "Status", name: "status" },
-                { label: "Location ID", name: "locationid" },
-                { label: "Warranty ID", name: "warrantyid" },
-              ].map((field) => (
-                <label key={field.name} className="block mb-2">
-                  {field.label}:
-                  <input
-                    type="text"
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [field.name]: e.target.value })
-                    }
-                    className="border px-2 py-1 w-full"
-                  />
-                </label>
-              ))}
-            </form>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="bg-gray-500 text-white px-3 py-1 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddForm}
-                className="bg-green-500 text-white px-3 py-1 rounded"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* DISPLAYED TABLE */}
       <div className="overflow-x-auto">
@@ -459,137 +413,39 @@ export default function CarsPage() {
       </div>
 
       {/* Modal for Editing */}
+
       {showModal && selectedCar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white py-6 px-12 rounded shadow-md">
             <h2 className="text-lg font-bold mb-4 text-center">Edit Car</h2>
             <form className="grid grid-cols-2 gap-4">
-              <label className="block mb-2">
-                Make:
-                <input
-                  type="text"
-                  value={selectedCar.make}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      make: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Model:
-                <input
-                  type="text"
-                  value={selectedCar.model}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      model: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Year:
-                <input
-                  type="text"
-                  value={selectedCar.year}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      year: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Color:
-                <input
-                  type="text"
-                  value={selectedCar.color}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      color: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Price:
-                <input
-                  type="number"
-                  value={selectedCar.price}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      price: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Mileage:
-                <input
-                  type="number"
-                  value={selectedCar.mileage}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      mileage: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Status:
-                <input
-                  type="text"
-                  value={selectedCar.status}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      status: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Location ID:
-                <input
-                  type="number"
-                  value={selectedCar.locationid}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      locationid: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
-              <label className="block mb-2">
-                Warranty ID:
-                <input
-                  type="number"
-                  value={selectedCar.warrantyid}
-                  onChange={(e) =>
-                    setSelectedCar({
-                      ...selectedCar,
-                      warrantyid: e.target.value === "" ? null : e.target.value,
-                    })
-                  }
-                  className="border px-2 py-1 w-full"
-                />
-              </label>
+              {[
+                { label: "Make", key: "make", type: "text" },
+                { label: "Model", key: "model", type: "text" },
+                { label: "Year", key: "year", type: "text" },
+                { label: "Color", key: "color", type: "text" },
+                { label: "Price", key: "price", type: "number" },
+                { label: "Mileage", key: "mileage", type: "number" },
+                { label: "Status", key: "status", type: "text" },
+                { label: "Location ID", key: "locationid", type: "number" },
+                { label: "Warranty ID", key: "warrantyid", type: "number" },
+              ].map((field) => (
+                <label key={field.key} className="block mb-2">
+                  {field.label}:
+                  <input
+                    type={field.type}
+                    value={selectedCar[field.key] || ""}
+                    onChange={(e) =>
+                      setSelectedCar({
+                        ...selectedCar,
+                        [field.key]:
+                          e.target.value === "" ? null : e.target.value,
+                      })
+                    }
+                    className="border px-2 py-1 w-full"
+                  />
+                </label>
+              ))}
             </form>
             <div className="mt-4 flex justify-end gap-2">
               <button
@@ -609,6 +465,57 @@ export default function CarsPage() {
                 className="bg-green-500 text-white px-3 py-1 rounded"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white py-6 px-12 rounded shadow-md">
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Create New Car
+            </h2>
+            <form className="grid grid-cols-2 gap-4">
+              {[
+                { label: "VIN", name: "vin" },
+                { label: "Make", name: "make" },
+                { label: "Model", name: "model" },
+                { label: "Year", name: "year" },
+                { label: "Color", name: "color" },
+                { label: "Price", name: "price" },
+                { label: "Mileage", name: "mileage" },
+                { label: "Status", name: "status" },
+                { label: "Location ID", name: "locationid" },
+                { label: "Warranty ID", name: "warrantyid" },
+              ].map((field) => (
+                <label key={field.name} className="block mb-2">
+                  {field.label}:
+                  <input
+                    type="text"
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.value })
+                    }
+                    className="border px-2 py-1 w-full"
+                  />
+                </label>
+              ))}
+            </form>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="bg-gray-500 text-white px-3 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddForm}
+                className="bg-green-500 text-white px-3 py-1 rounded"
+              >
+                Add
               </button>
             </div>
           </div>
