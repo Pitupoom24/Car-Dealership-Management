@@ -41,6 +41,9 @@ export default function CarsPage() {
     status: "",
     locationid: "",
     warrantyid: "",
+    startdate: "",
+    enddate: "",
+    coveragedetail: "",
   });
 
   const [currentEmployeeID, setCurrentEmployeeID] = useState(null);
@@ -110,6 +113,7 @@ export default function CarsPage() {
       }
       setCars((prevCars) => prevCars.filter((car) => car.vin !== vin));
       setShowModal(false);
+      alert("The car has already been deleted");
     } catch (err) {
       alert(err.message);
     }
@@ -141,6 +145,7 @@ export default function CarsPage() {
       setCars((prevCars) =>
         prevCars.map((car) => (car.vin === updatedCar.vin ? updatedCar : car))
       );
+      alert("The car has already been saved.");
       handleModalClose();
     } catch (err) {
       alert(err.message);
@@ -204,7 +209,11 @@ export default function CarsPage() {
         status: "",
         locationid: "",
         warrantyid: "",
+        startdate: "",
+        enddate: "",
+        coveragedetail: "",
       });
+      alert("The car has already been created.");
     } catch (err) {
       alert(err.message);
     }
@@ -508,6 +517,7 @@ export default function CarsPage() {
         </div>
       )}
 
+      {/* Modal for Adding New Car */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white py-6 px-12 rounded shadow-md">
@@ -526,6 +536,9 @@ export default function CarsPage() {
                 { label: "Status", name: "status" },
                 { label: "Location ID", name: "locationid" },
                 { label: "Warranty ID", name: "warrantyid" },
+                { label: "Start Date", name: "startdate" },
+                { label: "End Date", name: "enddate" },
+                { label: "Coverage Detail", name: "coveragedetail" },
               ].map((field) => (
                 <label key={field.name} className="block mb-2">
                   {field.label}:

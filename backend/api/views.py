@@ -30,12 +30,12 @@ class CarsViewSet(viewsets.ViewSet):
     def create(self, request):
         data = request.data
         
-        query = """
-            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy, warrantyID) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        query1 = """
+            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
     
-        params = [
+        params1 = [
             data.get('vin'),
             data.get('color', None),
             data.get('price', None),
@@ -46,11 +46,28 @@ class CarsViewSet(viewsets.ViewSet):
             data.get('year'), 
             data.get('locationid'),
             data.get('lastmodifiedby'),
-            data.get('warrantyid', None)
         ]
 
+        query2 = """
+            INSERT INTO Warranties (warrantyID, startDate, endDate, coverageDetail, VIN) 
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        
+        if data.get('warrantyid', None) is not None:
+            param2 = [
+                data.get('warrantyid', None),
+                data.get('startdate'),
+                data.get('enddate'),
+                data.get('coveragedetail', None),
+                data.get('vin'),
+            ]
+
         with connection.cursor() as cursor:
-            cursor.execute(query, params)
+            cursor.execute(query1, params1)
+            if data.get('warrantyid', None) is not None:
+                cursor.execute(query2, param2)
+                cursor.execute("UPDATE Cars SET warrantyID = %s WHERE VIN = %s", [data.get('warrantyid', None), data.get('vin')])
+ 
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -557,6 +574,29 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
 
         return Response(results, status=status.HTTP_200_OK)
     
+    ##################################################
+    ##################################################
+    ##################################################
+    # Adjust Prices
+    # ex http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/
+    @action(detail=False, methods=['put'], url_path='adjust_car_prices')
+    def adjust_car_prices(self, request):
+        data = request.data
+
+        percent_increase = data.get('percent_increase')
+        percent_decrease = data.get('percent_decrease')
+
+        if not percent_increase or not percent_decrease:
+            return Response({"detail": "Percent Increase/Percent Decrease must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("CALL AdjustCarPrices(%s, %s)", [percent_increase, percent_decrease])
+
+        return Response({"Success": "Prices have already been adjusted."}, status=status.HTTP_200_OK)
+    
+
+
+    
     # For Search Bar
     # ex http://127.0.0.1:8000/api/advanced_queries/?make=bmw&limit=10&higher_year=2005&lower_rating=2&higher_rating=4
     def list(self, request):
@@ -776,3 +816,28 @@ class LocationsViewSet(viewsets.ViewSet):
             return Response(location_data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Location not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+############################################################################################################
+################################################ Warranties ################################################
+
+############################################################################################################
+class WarrantiesViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def retrieve(self, request, pk=None):
+        query = """
+            SELECT *
+            FROM Warranties w
+            WHERE w.warrantyID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            warranty_data = dict(zip(columns, result))
+            return Response(warranty_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Warranty not found."}, status=status.HTTP_404_NOT_FOUND)
