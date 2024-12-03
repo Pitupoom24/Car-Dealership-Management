@@ -10,6 +10,7 @@ router.register('advanced_queries', AdvancedQueriesViewSet, basename='advanced_q
 router.register('users', UsersViewSet, basename='users')
 router.register('employees', EmployeesViewSet, basename='employees')
 router.register('locations', LocationsViewSet, basename='locations')
+router.register('warranties', WarrantiesViewSet, basename='warranties')
 urlpatterns = router.urls
 
 
