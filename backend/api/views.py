@@ -574,6 +574,29 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
 
         return Response(results, status=status.HTTP_200_OK)
     
+    ##################################################
+    ##################################################
+    ##################################################
+    # Adjust Prices
+    # ex http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/
+    @action(detail=False, methods=['put'], url_path='adjust_car_prices')
+    def adjust_car_prices(self, request):
+        data = request.data
+
+        percent_increase = data.get('percent_increase')
+        percent_decrease = data.get('percent_decrease')
+
+        if not percent_increase or not percent_decrease:
+            return Response({"detail": "Percent Increase/Percent Decrease must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("CALL AdjustCarPrices(%s, %s)", [percent_increase, percent_decrease])
+
+        return Response({"Success": "Prices have already been adjusted."}, status=status.HTTP_200_OK)
+    
+
+
+    
     # For Search Bar
     # ex http://127.0.0.1:8000/api/advanced_queries/?make=bmw&limit=10&higher_year=2005&lower_rating=2&higher_rating=4
     def list(self, request):
