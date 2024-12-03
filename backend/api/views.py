@@ -776,3 +776,27 @@ class LocationsViewSet(viewsets.ViewSet):
             return Response(location_data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Location not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+############################################################################################################
+################################################ Warranties ################################################
+############################################################################################################
+class WarrantiesViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+
+    def retrieve(self, request, pk=None):
+        query = """
+            SELECT *
+            FROM Warranties w
+            WHERE w.warrantyID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            warranty_data = dict(zip(columns, result))
+            return Response(warranty_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Warranty not found."}, status=status.HTTP_404_NOT_FOUND)
