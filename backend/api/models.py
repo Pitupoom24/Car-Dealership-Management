@@ -14,12 +14,14 @@ class Cars(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     mileage = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=50, blank=True, null=True)
-    make = models.CharField(max_length=50, blank=True, null=True)
-    model = models.CharField(max_length=50, blank=True, null=True)
-    year = models.IntegerField(blank=True, null=True)
-    # make = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='make', blank=True, null=True)
-    # model = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='model', related_name='cars_model_set', blank=True, null=True)
-    # year = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='year', related_name='cars_year_set', blank=True, null=True)
+
+    # make = models.CharField(max_length=50, blank=True, null=True)
+    # model = models.CharField(max_length=50, blank=True, null=True)
+    # year = models.IntegerField(blank=True, null=True)
+    make = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='make', blank=True, null=True)
+    model = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='model', related_name='cars_model_set', blank=True, null=True)
+    year = models.ForeignKey('Details', on_delete=models.SET_NULL, db_column='year', related_name='cars_year_set', blank=True, null=True)
+
     locationid = models.ForeignKey('Locations', on_delete=models.CASCADE, db_column='locationID')  # Field name made lowercase.
     lastmodifiedby = models.ForeignKey('Employees', on_delete=models.CASCADE, db_column='lastModifiedBy')  # Field name made lowercase.
     warrantyid = models.ForeignKey('Warranties', on_delete=models.SET_NULL, db_column='warrantyID', blank=True, null=True)  # Field name made lowercase.
@@ -123,7 +125,7 @@ class Warranties(models.Model):
     enddate = models.DateField(db_column='endDate')  # Field name made lowercase.
     coveragedetail = models.CharField(db_column='coverageDetail', max_length=1000, blank=True, null=True)  # Field name made lowercase.
     vin = models.ForeignKey(Cars, on_delete=models.CASCADE, db_column='VIN')  # Field name made lowercase.
-    reviewid = models.ForeignKey(Reviews, on_delete=models.CASCADE, db_column='reviewID')  # Field name made lowercase.
+    # reviewid = models.ForeignKey(Reviews, on_delete=models.CASCADE, db_column='reviewID')  # Field name made lowercase.
 
     class Meta:
         managed = False
