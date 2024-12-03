@@ -125,7 +125,7 @@ class Warranties(models.Model):
     enddate = models.DateField(db_column='endDate')  # Field name made lowercase.
     coveragedetail = models.CharField(db_column='coverageDetail', max_length=1000, blank=True, null=True)  # Field name made lowercase.
     vin = models.ForeignKey(Cars, on_delete=models.CASCADE, db_column='VIN')  # Field name made lowercase.
-    reviewid = models.ForeignKey(Reviews, on_delete=models.CASCADE, db_column='reviewID')  # Field name made lowercase.
+    # reviewid = models.ForeignKey(Reviews, on_delete=models.CASCADE, db_column='reviewID')  # Field name made lowercase.
 
     class Meta:
         managed = False

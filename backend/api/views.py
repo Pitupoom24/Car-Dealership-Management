@@ -30,12 +30,12 @@ class CarsViewSet(viewsets.ViewSet):
     def create(self, request):
         data = request.data
         
-        query = """
-            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy, warrantyID) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        query1 = """
+            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
     
-        params = [
+        params1 = [
             data.get('vin'),
             data.get('color', None),
             data.get('price', None),
@@ -46,11 +46,28 @@ class CarsViewSet(viewsets.ViewSet):
             data.get('year'), 
             data.get('locationid'),
             data.get('lastmodifiedby'),
-            data.get('warrantyid', None)
         ]
 
+        query2 = """
+            INSERT INTO Warranties (warrantyID, startDate, endDate, coverageDetail, VIN) 
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        
+        if data.get('warrantyid', None) is not None:
+            param2 = [
+                data.get('warrantyid', None),
+                data.get('startdate'),
+                data.get('enddate'),
+                data.get('coveragedetail', None),
+                data.get('vin'),
+            ]
+
         with connection.cursor() as cursor:
-            cursor.execute(query, params)
+            cursor.execute(query1, params1)
+            if data.get('warrantyid', None) is not None:
+                cursor.execute(query2, param2)
+                cursor.execute("UPDATE Cars SET warrantyID = %s WHERE VIN = %s", [data.get('warrantyid', None), data.get('vin')])
+ 
 
         return Response(data, status=status.HTTP_201_CREATED)
 
