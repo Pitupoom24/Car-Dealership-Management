@@ -375,6 +375,9 @@ class DetailsViewSet(viewsets.ViewSet):
             return Response(results, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+    
 
     # ex. http://127.0.0.1:8000/api/details/destroy_by_make_model_year/?make=acura&model=mdx&year=2011    
     @action(detail=False, methods=['delete'], url_path='destroy_by_make_model_year')
@@ -772,38 +775,177 @@ class UsersViewSet(viewsets.ViewSet):
 ############################################################################################################
 ################################################ Employees #################################################
 ############################################################################################################
-class EmployeesViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
 
-    def retrieve(self, request, pk=None):
+# views.py
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    queryset = Employees.objects.all()
+    serializer_class = EmployeesSerializer
+
+    
+
+    # Custom action to create employee
+    def create(self, request):
+        data = request.data
+
         query = """
-            SELECT *
-            FROM Employees e
-            WHERE e.employeeID=%s
+            INSERT INTO Employee (firstname, lastname, email, password, locationid)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+
+        params = [
+            data.get('employeeid'),
+            data.get('firstname'),
+            data.get('lastname'),
+            data.get('email'),
+            data.get('password'),
+            data.get('locationid')
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    # Custom action to update employee
+    def update(self, request, pk=None):
+        data = request.data
+
+        query = """
+            UPDATE Employee
+            SET firstname=%s, lastname=%s, email=%s, password=%s, locationid=%s
+            WHERE employeeid=%s
+        """
+
+        params = [
+            data.get('employeeid',None),
+            data.get('firstname', None),
+            data.get('lastname', None),
+            data.get('email', None),
+            data.get('password', None),
+            data.get('locationid', None),
+            pk
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        updated_data = {
+            "employeeid": pk,
+            "firstname": data.get('firstname', None),
+            "lastname": data.get('lastname', None),
+            "email": data.get('email', None),
+            "password": data.get('password', None),
+            "locationid": data.get('locationid', None),
+        }
+
+        return Response(updated_data, status=status.HTTP_200_OK)
+
+    # Custom action to delete employee
+    def destroy(self, request, pk=None):
+        query = """
+            DELETE FROM Employee
+            WHERE employeeid=%s
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(query, [pk]) 
-            columns = [col[0].lower() for col in cursor.description]
-            result = cursor.fetchone()
+            cursor.execute(query, [pk])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_employeeid')  
+    def retrieve_by_locationid(self, request):
+        employeeid = request.GET.get('employeeid')
+        
 
-        if result:
-            employee_data = dict(zip(columns, result))
-            return Response(employee_data, status=status.HTTP_200_OK)
+        if not employeeid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Employees
+            WHERE employeeid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [employeeid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
         else:
-            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+
         
 ############################################################################################################
 ################################################ Locations #################################################
 ############################################################################################################
-class LocationsViewSet(viewsets.ViewSet):
+class LocationViewSet(viewsets.ViewSet):
+    serializer_class = LocationsSerializer
     permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+        query = f"SELECT * FROM Locations LIMIT {limit} OFFSET {offset}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        data = request.data
+
+        query = """
+            INSERT INTO Locations (locationID, address, phoneNumber)
+            VALUES (%s, %s, %s)
+        """
+
+        params = [
+            data.get('locationid'),
+            data.get('address'),
+            data.get('phonenumber'),
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        data = request.data
+
+        query = """
+            UPDATE Locations
+            SET address=%s, phoneNumber=%s
+            WHERE locationID=%s
+        """
+
+        params = [
+            data.get('address', None),
+            data.get('phonenumber', None),
+            pk  # use pk for locationID
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        updated_data = {
+            "locationid": pk,
+            "address": data.get('address', None),
+            "phonenumber": data.get('phonenumber', None),
+        }
+
+        return Response(updated_data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         query = """
             SELECT *
-            FROM Locations l
-            WHERE l.locationID=%s
+            FROM Locations
+            WHERE locationID=%s
         """
 
         with connection.cursor() as cursor:
@@ -816,6 +958,42 @@ class LocationsViewSet(viewsets.ViewSet):
             return Response(location_data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Location not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        query = """
+            DELETE FROM Locations
+            WHERE locationID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_locationid')  
+    def retrieve_by_locationid(self, request):
+        locationid = request.GET.get('locationid')
+        
+
+        if not locationid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Locations
+            WHERE locationid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [locationid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+
+
         
 ############################################################################################################
 ################################################ Warranties ################################################
