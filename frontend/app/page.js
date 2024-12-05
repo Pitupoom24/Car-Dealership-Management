@@ -291,16 +291,16 @@ export default function CarsPage() {
 
         {/* Number inputs */}
         {[
-          { name: "lower_year", label: "Lower Year" },
-          { name: "higher_year", label: "Higher Year" },
-          { name: "lower_numberofcylinders", label: "Lower Cylinders" },
-          { name: "higher_numberofcylinders", label: "Higher Cylinders" },
-          { name: "lower_price", label: "Lower Price" },
-          { name: "higher_price", label: "Higher Price" },
-          { name: "lower_mileage", label: "Lower Mileage" },
-          { name: "higher_mileage", label: "Higher Mileage" },
-          { name: "lower_rating", label: "Lower Rating" },
-          { name: "higher_rating", label: "Higher Rating" },
+          { name: "lower_year", label: "Min Year" },
+          { name: "higher_year", label: "Max Year" },
+          { name: "lower_numberofcylinders", label: "Min Cylinders" },
+          { name: "higher_numberofcylinders", label: "Max Cylinders" },
+          { name: "lower_price", label: "Min Price" },
+          { name: "higher_price", label: "Max Price" },
+          { name: "lower_mileage", label: "Min Mileage" },
+          { name: "higher_mileage", label: "Max Mileage" },
+          { name: "lower_rating", label: "Min Rating" },
+          { name: "higher_rating", label: "Max Rating" },
         ].map((field) => (
           <div key={field.name} className="flex flex-col">
             <label className="text-sm font-semibold mb-1">{field.label}</label>
@@ -382,7 +382,7 @@ export default function CarsPage() {
               <tr key={car.vin} className="hover:bg-indigo-50 text-center">
                 {/* Table Data */}
                 <td className="text-sm text-center bg-gradient-to-r from-black to-black bg-clip-text text-transparent border border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
-                  <Link
+                <Link
                     href={{
                       pathname: "/details",
                       query: {
@@ -417,10 +417,34 @@ export default function CarsPage() {
                   {car.status === null ? "-" : car.status}
                 </td>
                 <td className="text-sm border border-gray-300 px-4 py-2">
-                  {car.locationid === null ? "-" : car.locationid}
+                  {car.locationid === null ? "-" : ""}
+                  <Link
+                    href={{
+                      pathname: "/location_detail",
+                      query: {
+                        locationid: car.locationid,
+                        
+                      },
+                    }}
+                  >
+                    {car.locationid}
+                  </Link>
+                
                 </td>
                 <td className="text-sm border border-gray-300 px-4 py-2">
-                  {car.lastmodifiedby === null ? "-" : car.lastmodifiedby}
+                  
+
+                  <Link
+                    href={{
+                      pathname: "/employees_details",
+                      query: {
+                        employeeid: car.lastmodifiedby,
+                        
+                      },
+                    }}
+                  >
+                    {car.lastmodifiedby}
+                  </Link>
                 </td>
                 <td className="text-sm border border-gray-300 px-4 py-2">
                   {car.warrantyid === null ? "-" : car.warrantyid}
