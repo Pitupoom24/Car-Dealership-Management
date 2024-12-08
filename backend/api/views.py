@@ -542,7 +542,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
     ##################################################
     ##################################################
     # Combined Advanced Queries - calculate the total score
-    #avance search
+    #Advanced search
     # ex http://127.0.0.1:8000/api/advanced_queries/total_score/?weight1=0.2&weight2=0.3&weight3=0.1&weight4=0.4&higher_price=5000&higher_mileage=150000&transmission=Automatic&drivewheel=Front&limit=10&offset=0
     @action(detail=False, methods=['GET'], url_path='total_score')
     def total_score(self, request):
