@@ -542,6 +542,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
     ##################################################
     ##################################################
     # Combined Advanced Queries - calculate the total score
+    #Advanced search
     # ex http://127.0.0.1:8000/api/advanced_queries/total_score/?weight1=0.2&weight2=0.3&weight3=0.1&weight4=0.4&higher_price=5000&higher_mileage=150000&transmission=Automatic&drivewheel=Front&limit=10&offset=0
     @action(detail=False, methods=['GET'], url_path='total_score')
     def total_score(self, request):
@@ -580,7 +581,9 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
     ##################################################
     ##################################################
     ##################################################
+
     # Adjust Prices
+
     # ex http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/
     @action(detail=False, methods=['put'], url_path='adjust_car_prices')
     def adjust_car_prices(self, request):
@@ -1001,6 +1004,22 @@ class LocationViewSet(viewsets.ViewSet):
 ############################################################################################################
 class WarrantiesViewSet(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]
+    serializer_class = WarrantiesSerializer
+
+    def list(self, request):
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+        query = f"SELECT * FROM Warranties LIMIT {limit} OFFSET {offset}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+
+    
+
 
     def retrieve(self, request, pk=None):
         query = """
@@ -1019,3 +1038,27 @@ class WarrantiesViewSet(viewsets.ViewSet):
             return Response(warranty_data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Warranty not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_warrantyid')  
+    def retrieve_by_warrantyid(self, request):
+        warrantyid = request.GET.get('warrantyid')
+        
+
+        if not warrantyid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Warranties
+            WHERE warrantyid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [warrantyid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
