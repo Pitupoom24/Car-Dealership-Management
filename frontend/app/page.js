@@ -447,7 +447,19 @@ export default function CarsPage() {
                   </Link>
                 </td>
                 <td className="text-sm border border-gray-300 px-4 py-2">
-                  {car.warrantyid === null ? "-" : car.warrantyid}
+                  {car.warrantyid === null ? "-" : ""}
+                  
+                  <Link
+                    href={{
+                      pathname: "/waranties_details",
+                      query: {
+                        warrantyid: car.warrantyid,
+                        
+                      },
+                    }}
+                  >
+                    {car.warrantyid}
+                  </Link>
                 </td>
                 <td className="text-sm border border-gray-300 px-4 py-2 gap-2 justify-center">
                   <button
