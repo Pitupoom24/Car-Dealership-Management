@@ -10,6 +10,9 @@ export default function CarsPage() {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [percentIncrease, setPercentIncrease] = useState("");
+  const [percentDecrease, setPercentDecrease] = useState("");
+  const [responseMessage, setResponseMessage] = useState("");
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -171,6 +174,15 @@ export default function CarsPage() {
     }
   };
 
+  const handleSubmit2 = (e) => {
+    e.preventDefault();
+    if (!percentIncrease || !percentDecrease) {
+      alert("Please provide both percent increase and percent decrease.");
+      return;
+    }
+    adjustCarPrices(percentIncrease, percentDecrease);
+  };
+
 
   const fetchResults = async () => {
     setLoading(true);
@@ -190,6 +202,29 @@ export default function CarsPage() {
     }
   };
 
+  const handleSubmit3 = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          percent_increase: percentIncrease,
+          percent_decrease: percentDecrease,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setResponseMessage(data.Success || "Prices adjusted successfully!");
+      } else {
+        setResponseMessage(data.detail || "An error occurred.");
+      }
+    } catch (error) {
+      setResponseMessage("Failed to adjust prices. Please try again later.");
+    }
+  };
 
 
 
@@ -484,36 +519,47 @@ export default function CarsPage() {
 
           {/* show pop up of adjust price */}
          {showAdjustButtons && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-[90%] max-w-md shadow-lg">
-            <h2 className="text-lg font-bold mb-4 text-center">Adjust Prices</h2>
-            <div className="flex justify-center space-x-4">
-              <button
-                type="button"
-                className="text-xs bg-green-500 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-                onClick={() => adjustCarPrices(10, 5)} // Example: 10% increase
-                
-              >
-                Increase
-              </button>
-              <button
-                type="button"
-                className="text-xs bg-red-500 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
-                onClick={() => adjustCarPrices(5, 10)}
-              >
-                Decrease
-              </button>
-            </div>
-            <button
-              type="button"
-              className="mt-4 text-sm text-gray-500 hover:underline block mx-auto"
-              onClick={handleadjustclose}
-             
+
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+<div className="bg-white rounded-lg shadow-lg p-6 w-96">
+  
+
+  <div className="p-6 bg-gray-100 rounded shadow-md w-1/2 mx-auto">
+      <h1 className="text-xl font-semibold mb-4">Adjust Car Prices</h1>
+      <div className="mb-4">
+        <label className="block text-gray-700">Percent Increase</label>
+        <input
+          type="number"
+          className="mt-1 p-2 border border-gray-300 rounded w-full"
+          value={percentIncrease}
+          onChange={(e) => setPercentIncrease(e.target.value)}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700">Percent Decrease</label>
+        <input
+          type="number"
+          className="mt-1 p-2 border border-gray-300 rounded w-full"
+          value={percentDecrease}
+          onChange={(e) => setPercentDecrease(e.target.value)}
+        />
+      </div>
+      <button
+        onClick={handleSubmit3}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Adjust Prices
+      </button>
+      {responseMessage && <p className="mt-4 text-gray-600">{responseMessage}</p>}
+    </div>
+      <button
+              onClick={() => setShowAdjustButtons(false)}
+              className="mt-4 w-full py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
             >
               Close
             </button>
-          </div>
-        </div>
+      </div>
+      </div>
       )}
           
 
@@ -758,7 +804,7 @@ export default function CarsPage() {
       </thead>
       <tbody className="bg-slate-50">
         {cars.map((car) => (
-          <tr key={car.vin} className="hover:bg-indigo-50 text-center">
+          <tr key={`${car.make}-${car.model}-${car.year}`} className="hover:bg-indigo-50 text-center">
             <td className="text-sm border border-gray-300 px-4 py-2">
               {car.make === null ? "-" : car.make}
             </td>
