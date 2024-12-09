@@ -59,7 +59,7 @@ export default function CarsPage() {
     higher_mileage: "",
     transmission: "",
     drivewheel: "",
-    limit: 10,
+    limit: 20,
     offset: 0,
     
   });
@@ -645,9 +645,8 @@ export default function CarsPage() {
       </form>
       
       {/* Results Table */}
-      {console.log(showAdvanced)}
-
      
+
      
       {results.length>0 && showAdvanced &&(
               <div className="mt-6">
