@@ -30,12 +30,12 @@ class CarsViewSet(viewsets.ViewSet):
     def create(self, request):
         data = request.data
         
-        query = """
-            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy, warrantyID) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        query1 = """
+            INSERT INTO Cars (VIN, color, price, mileage, status, make, model, year, locationID, lastModifiedBy) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
     
-        params = [
+        params1 = [
             data.get('vin'),
             data.get('color', None),
             data.get('price', None),
@@ -46,11 +46,28 @@ class CarsViewSet(viewsets.ViewSet):
             data.get('year'), 
             data.get('locationid'),
             data.get('lastmodifiedby'),
-            data.get('warrantyid', None)
         ]
 
+        query2 = """
+            INSERT INTO Warranties (warrantyID, startDate, endDate, coverageDetail, VIN) 
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        
+        if data.get('warrantyid', None) is not None:
+            param2 = [
+                data.get('warrantyid', None),
+                data.get('startdate'),
+                data.get('enddate'),
+                data.get('coveragedetail', None),
+                data.get('vin'),
+            ]
+
         with connection.cursor() as cursor:
-            cursor.execute(query, params)
+            cursor.execute(query1, params1)
+            if data.get('warrantyid', None) is not None:
+                cursor.execute(query2, param2)
+                cursor.execute("UPDATE Cars SET warrantyID = %s WHERE VIN = %s", [data.get('warrantyid', None), data.get('vin')])
+ 
 
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -358,6 +375,9 @@ class DetailsViewSet(viewsets.ViewSet):
             return Response(results, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+    
 
     # ex. http://127.0.0.1:8000/api/details/destroy_by_make_model_year/?make=acura&model=mdx&year=2011    
     @action(detail=False, methods=['delete'], url_path='destroy_by_make_model_year')
@@ -522,6 +542,7 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
     ##################################################
     ##################################################
     # Combined Advanced Queries - calculate the total score
+    #Advanced search
     # ex http://127.0.0.1:8000/api/advanced_queries/total_score/?weight1=0.2&weight2=0.3&weight3=0.1&weight4=0.4&higher_price=5000&higher_mileage=150000&transmission=Automatic&drivewheel=Front&limit=10&offset=0
     @action(detail=False, methods=['GET'], url_path='total_score')
     def total_score(self, request):
@@ -556,6 +577,31 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         return Response(results, status=status.HTTP_200_OK)
+    
+    ##################################################
+    ##################################################
+    ##################################################
+
+    # Adjust Prices
+
+    # ex http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/
+    @action(detail=False, methods=['put'], url_path='adjust_car_prices')
+    def adjust_car_prices(self, request):
+        data = request.data
+
+        percent_increase = data.get('percent_increase')
+        percent_decrease = data.get('percent_decrease')
+
+        if not percent_increase or not percent_decrease:
+            return Response({"detail": "Percent Increase/Percent Decrease must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with connection.cursor() as cursor:
+            cursor.execute("CALL AdjustCarPrices(%s, %s)", [percent_increase, percent_decrease])
+
+        return Response({"Success": "Prices have already been adjusted."}, status=status.HTTP_200_OK)
+    
+
+
     
     # For Search Bar
     # ex http://127.0.0.1:8000/api/advanced_queries/?make=bmw&limit=10&higher_year=2005&lower_rating=2&higher_rating=4
@@ -633,34 +679,34 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             query += " AND c.vin=%s"
             parameters.append(vin)
         if color:
-            query += " AND color=%s"
+            query += " AND c.color=%s"
             parameters.append(color)
         if lower_price:
-            query += " AND price >= %s"
+            query += " AND c.price >= %s"
             parameters.append(lower_price)
         if higher_price:
-            query += " AND price <= %s"
+            query += " AND c.price <= %s"
             parameters.append(higher_price)
         if lower_mileage:
-            query += " AND mileage >= %s"
+            query += " AND c.mileage >= %s"
             parameters.append(lower_mileage)
         if higher_mileage:
-            query += " AND mileage <= %s"
+            query += " AND c.mileage <= %s"
             parameters.append(higher_mileage)
         if _status:
-            query += " AND status=%s"
+            query += " AND c.status=%s"
             parameters.append(_status)
         if locationid:
-            query += " AND locationid=%s"
+            query += " AND c.locationid=%s"
             parameters.append(locationid)
         if lastmodifiedby:
-            query += " AND lastmodifiedby=%s"
+            query += " AND c.lastmodifiedby=%s"
             parameters.append(lastmodifiedby)
         if lower_rating:
-            query += " AND averageRating >= %s"
+            query += " AND r.averageRating >= %s"
             parameters.append(lower_rating)
         if higher_rating:
-            query += " AND averageRating <= %s"
+            query += " AND r.averageRating <= %s"
             parameters.append(higher_rating)
 
         query += f" LIMIT {limit}"
@@ -732,38 +778,177 @@ class UsersViewSet(viewsets.ViewSet):
 ############################################################################################################
 ################################################ Employees #################################################
 ############################################################################################################
-class EmployeesViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
 
-    def retrieve(self, request, pk=None):
+# views.py
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    queryset = Employees.objects.all()
+    serializer_class = EmployeesSerializer
+
+    
+
+    # Custom action to create employee
+    def create(self, request):
+        data = request.data
+
         query = """
-            SELECT *
-            FROM Employees e
-            WHERE e.employeeID=%s
+            INSERT INTO Employee (firstname, lastname, email, password, locationid)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+
+        params = [
+            data.get('employeeid'),
+            data.get('firstname'),
+            data.get('lastname'),
+            data.get('email'),
+            data.get('password'),
+            data.get('locationid')
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    # Custom action to update employee
+    def update(self, request, pk=None):
+        data = request.data
+
+        query = """
+            UPDATE Employee
+            SET firstname=%s, lastname=%s, email=%s, password=%s, locationid=%s
+            WHERE employeeid=%s
+        """
+
+        params = [
+            data.get('employeeid',None),
+            data.get('firstname', None),
+            data.get('lastname', None),
+            data.get('email', None),
+            data.get('password', None),
+            data.get('locationid', None),
+            pk
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        updated_data = {
+            "employeeid": pk,
+            "firstname": data.get('firstname', None),
+            "lastname": data.get('lastname', None),
+            "email": data.get('email', None),
+            "password": data.get('password', None),
+            "locationid": data.get('locationid', None),
+        }
+
+        return Response(updated_data, status=status.HTTP_200_OK)
+
+    # Custom action to delete employee
+    def destroy(self, request, pk=None):
+        query = """
+            DELETE FROM Employee
+            WHERE employeeid=%s
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(query, [pk]) 
-            columns = [col[0].lower() for col in cursor.description]
-            result = cursor.fetchone()
+            cursor.execute(query, [pk])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_employeeid')  
+    def retrieve_by_locationid(self, request):
+        employeeid = request.GET.get('employeeid')
+        
 
-        if result:
-            employee_data = dict(zip(columns, result))
-            return Response(employee_data, status=status.HTTP_200_OK)
+        if not employeeid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Employees
+            WHERE employeeid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [employeeid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
         else:
-            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+
         
 ############################################################################################################
 ################################################ Locations #################################################
 ############################################################################################################
-class LocationsViewSet(viewsets.ViewSet):
+class LocationViewSet(viewsets.ViewSet):
+    serializer_class = LocationsSerializer
     permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+        query = f"SELECT * FROM Locations LIMIT {limit} OFFSET {offset}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        data = request.data
+
+        query = """
+            INSERT INTO Locations (locationID, address, phoneNumber)
+            VALUES (%s, %s, %s)
+        """
+
+        params = [
+            data.get('locationid'),
+            data.get('address'),
+            data.get('phonenumber'),
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        data = request.data
+
+        query = """
+            UPDATE Locations
+            SET address=%s, phoneNumber=%s
+            WHERE locationID=%s
+        """
+
+        params = [
+            data.get('address', None),
+            data.get('phonenumber', None),
+            pk  # use pk for locationID
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+        updated_data = {
+            "locationid": pk,
+            "address": data.get('address', None),
+            "phonenumber": data.get('phonenumber', None),
+        }
+
+        return Response(updated_data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         query = """
             SELECT *
-            FROM Locations l
-            WHERE l.locationID=%s
+            FROM Locations
+            WHERE locationID=%s
         """
 
         with connection.cursor() as cursor:
@@ -776,3 +961,104 @@ class LocationsViewSet(viewsets.ViewSet):
             return Response(location_data, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Location not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def destroy(self, request, pk=None):
+        query = """
+            DELETE FROM Locations
+            WHERE locationID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_locationid')  
+    def retrieve_by_locationid(self, request):
+        locationid = request.GET.get('locationid')
+        
+
+        if not locationid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Locations
+            WHERE locationid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [locationid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
+
+
+        
+############################################################################################################
+################################################ Warranties ################################################
+
+############################################################################################################
+class WarrantiesViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = WarrantiesSerializer
+
+    def list(self, request):
+        limit = int(request.GET.get('limit', 10))
+        offset = int(request.GET.get('offset', 0))
+        query = f"SELECT * FROM Warranties LIMIT {limit} OFFSET {offset}"
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        return Response(results, status=status.HTTP_200_OK)
+
+    
+
+
+    def retrieve(self, request, pk=None):
+        query = """
+            SELECT *
+            FROM Warranties w
+            WHERE w.warrantyID=%s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [pk]) 
+            columns = [col[0].lower() for col in cursor.description]
+            result = cursor.fetchone()
+
+        if result:
+            warranty_data = dict(zip(columns, result))
+            return Response(warranty_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Warranty not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['get'], url_path='retrieve_by_warrantyid')  
+    def retrieve_by_warrantyid(self, request):
+        warrantyid = request.GET.get('warrantyid')
+        
+
+        if not warrantyid:
+            return Response({"detail": "Make, model, and year must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        query = """
+            SELECT *
+            FROM Warranties
+            WHERE warrantyid=%s 
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [warrantyid]) 
+            columns = [col[0].lower() for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        if results:
+            return Response(results, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No details found for the given make, model, and year."}, status=status.HTTP_404_NOT_FOUND)
