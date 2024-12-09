@@ -59,7 +59,12 @@ export default function CarsPage() {
     higher_mileage: "",
     transmission: "",
     drivewheel: "",
+<<<<<<< HEAD
    
+=======
+    limit: 10,
+    offset: 0,
+>>>>>>> master
   });
 
   const [currentEmployeeID, setCurrentEmployeeID] = useState(null);
@@ -216,6 +221,92 @@ export default function CarsPage() {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const fetchTopOfListHandler = () => {
+    fetchTopOfList(); // Call your fetch function
+    setTopOfList(true); // Update the state
+    setShowAdvanced(false);
+  };
+
+  const fetchTopOfList = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/advanced_queries/top_of_list/"
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setCars(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const adjustCarPrices = async (percentIncrease, percentDecrease) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            percent_increase: percentIncrease,
+            percent_decrease: percentDecrease,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.Success || "Prices adjusted successfully!");
+      } else {
+        alert(data.detail || "Failed to adjust prices.");
+      }
+    } catch (error) {
+      console.error("Error adjusting prices:", error);
+      alert("An error occurred while adjusting prices.");
+    } finally {
+      setLoading(false);
+      setShowAdjustButtons(false); // Close modal after action
+    }
+  };
+
+  const handleSubmit2 = (e) => {
+    e.preventDefault();
+    if (!percentIncrease || !percentDecrease) {
+      alert("Please provide both percent increase and percent decrease.");
+      return;
+    }
+    adjustCarPrices(percentIncrease, percentDecrease);
+  };
+
+  const fetchResults = async () => {
+    setLoading(true);
+    const queryParams = new URLSearchParams(formData2).toString();
+    const url = `http://127.0.0.1:8000/api/advanced_queries/total_score/?${queryParams}`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch results");
+      }
+      const data = await response.json();
+      setResults(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+>>>>>>> master
   const handleSubmit3 = async () => {
     try {
       const response = await fetch(
@@ -674,7 +765,11 @@ export default function CarsPage() {
       {console.log(showAdvanced)}
 
       {results.length > 0 && showAdvanced && (
+<<<<<<< HEAD
         <><div className="mt-6">
+=======
+        <div className="mt-6">
+>>>>>>> master
           <h3 className="text-md font-medium text-gray-700">Results:</h3>
           <table className="min-w-full border border-gray-300 mt-2">
             <thead className="bg-gray-50 border-b">
@@ -701,6 +796,7 @@ export default function CarsPage() {
               ))}
             </tbody>
           </table>
+<<<<<<< HEAD
         </div><div className="mt-4 flex justify-between items-center">
             <button
               onClick={handlePreviousPage}
@@ -727,6 +823,9 @@ export default function CarsPage() {
         
 
         
+=======
+        </div>
+>>>>>>> master
       )}
 
       {/* DISPLAYED TABLE */}
@@ -888,7 +987,11 @@ export default function CarsPage() {
 
       {/* Pagination */}
 
+<<<<<<< HEAD
       {!TopOfList && !showAdvanced &&(
+=======
+      {!TopOfList && (
+>>>>>>> master
         <div className="flex justify-center mt-4">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
