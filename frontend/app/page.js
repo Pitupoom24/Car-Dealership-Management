@@ -564,13 +564,26 @@ export default function CarsPage() {
                 {Object.keys(formData2).map((key) => {
                   if (key === "limit" || key === "offset") return null;
 
+                  let labelText;
+                  if (key === "weight1") {
+                    labelText = "Weight for Customer Preference Match";
+                  } else if (key === "weight2") {
+                    labelText = "Weight for Vehicle Feature Score";
+                  } else if (key === "weight3") {
+                    labelText = "Weight for Sales Trend Score";
+                  } else if (key === "weight4") {
+                    labelText = "Weight for Inventory Score";
+                  } else {
+                    labelText = key.replace("_", " ");
+                  }
+
                   return (
                     <div key={key}>
                       <label
                         htmlFor={key}
                         className="block text-sm font-medium text-gray-700 capitalize"
                       >
-                        {key.replace("_", " ")}
+                        {labelText}
                       </label>
                       <input
                         type="text"
