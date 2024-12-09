@@ -61,23 +61,15 @@ export default function CarsPage() {
     drivewheel: "",
     limit: 10,
     offset: 0,
-    
   });
-
 
   const [currentEmployeeID, setCurrentEmployeeID] = useState(null);
   const [isCurrentlyLoggedIn, setIsCurrentlyLoggedIn] = useState(false);
   const [showAdjustButtons, setShowAdjustButtons] = useState(false);
 
-
-
-
-  const [TopOfList, setTopOfList ] = useState(false);
+  const [TopOfList, setTopOfList] = useState(false);
   const [advancedSearch, setAdvancedSearch] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-
-  
-
 
   useEffect(() => {
     setCurrentEmployeeID(sessionStorage.getItem("current_employee_id"));
@@ -118,19 +110,18 @@ export default function CarsPage() {
     }
   };
 
-
-
   const fetchTopOfListHandler = () => {
     fetchTopOfList(); // Call your fetch function
     setTopOfList(true); // Update the state
     setShowAdvanced(false);
-    
   };
 
   const fetchTopOfList = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:8000/api/advanced_queries/top_of_list/");
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/advanced_queries/top_of_list/"
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
@@ -143,21 +134,22 @@ export default function CarsPage() {
     }
   };
 
-
-
   const adjustCarPrices = async (percentIncrease, percentDecrease) => {
     setLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          percent_increase: percentIncrease,
-          percent_decrease: percentDecrease,
-        }),
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            percent_increase: percentIncrease,
+            percent_decrease: percentDecrease,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -183,7 +175,6 @@ export default function CarsPage() {
     adjustCarPrices(percentIncrease, percentDecrease);
   };
 
-
   const fetchResults = async () => {
     setLoading(true);
     const queryParams = new URLSearchParams(formData2).toString();
@@ -204,16 +195,19 @@ export default function CarsPage() {
 
   const handleSubmit3 = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          percent_increase: percentIncrease,
-          percent_decrease: percentDecrease,
-        }),
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/advanced_queries/adjust_car_prices/",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            percent_increase: percentIncrease,
+            percent_decrease: percentDecrease,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -225,10 +219,6 @@ export default function CarsPage() {
       setResponseMessage("Failed to adjust prices. Please try again later.");
     }
   };
-
-
-
-
 
   useEffect(() => {
     fetchCars();
@@ -303,9 +293,7 @@ export default function CarsPage() {
   const handleChange2 = (e) => {
     const { name, value } = e.target;
     setFormData2({ ...formData2, [name]: value });
-    
   };
-
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -316,12 +304,9 @@ export default function CarsPage() {
   };
   const handleSearch2 = (e) => {
     e.preventDefault();
-    
+
     setTopOfList(false);
     setShowAdvanced(true);
-    
-
-    
   };
   const handleAdjustPricesClick = () => {
     setShowAdjustButtons(true);
@@ -329,7 +314,6 @@ export default function CarsPage() {
   const handleadjustclose = () => {
     setShowAdjustButtons(false);
   };
-
 
   const handleAddForm = async () => {
     if (
@@ -347,7 +331,7 @@ export default function CarsPage() {
       lastmodifiedby: currentEmployeeID, // Add the employee ID
     };
 
-    if (dataToSubmit_create.warrantyid == ""){
+    if (dataToSubmit_create.warrantyid == "") {
       dataToSubmit_create.warrantyid = null;
     }
 
@@ -385,18 +369,10 @@ export default function CarsPage() {
     } catch (err) {
       alert(err.message);
     }
-
   };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-
-
- 
- 
-    
-    
-   
 
   return (
     <div className="container mx-auto px-5 py-8 text-indigo-950">
@@ -516,334 +492,358 @@ export default function CarsPage() {
             Adjust Prices
           </button>
 
-
           {/* show pop up of adjust price */}
-         {showAdjustButtons && (
-
-<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-<div className="bg-white rounded-lg shadow-lg p-6 w-96">
-  
-
-  <div className="p-6 bg-gray-100 rounded shadow-md w-1/2 mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Adjust Car Prices</h1>
-      <div className="mb-4">
-        <label className="block text-gray-700">Percent Increase</label>
-        <input
-          type="number"
-          className="mt-1 p-2 border border-gray-300 rounded w-full"
-          value={percentIncrease}
-          onChange={(e) => setPercentIncrease(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700">Percent Decrease</label>
-        <input
-          type="number"
-          className="mt-1 p-2 border border-gray-300 rounded w-full"
-          value={percentDecrease}
-          onChange={(e) => setPercentDecrease(e.target.value)}
-        />
-      </div>
-      <button
-        onClick={handleSubmit3}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Adjust Prices
-      </button>
-      {responseMessage && <p className="mt-4 text-gray-600">{responseMessage}</p>}
-    </div>
-      <button
-              onClick={() => setShowAdjustButtons(false)}
-              className="mt-4 w-full py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Close
-            </button>
-      </div>
-      </div>
-      )}
-          
+          {showAdjustButtons && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                <div className="p-6 bg-gray-100 rounded shadow-md w-4/6 mx-auto">
+                  <h1 className="text-xl font-semibold mb-4">
+                    Adjust Car Prices
+                  </h1>
+                  <div className="mb-4">
+                    <label className="block text-gray-700">
+                      Percent Increase
+                    </label>
+                    <input
+                      type="number"
+                      className="mt-1 p-2 border border-gray-300 rounded w-full"
+                      value={percentIncrease}
+                      onChange={(e) => setPercentIncrease(e.target.value)}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700">
+                      Percent Decrease
+                    </label>
+                    <input
+                      type="number"
+                      className="mt-1 p-2 border border-gray-300 rounded w-full"
+                      value={percentDecrease}
+                      onChange={(e) => setPercentDecrease(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    onClick={handleSubmit3}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Adjust Prices
+                  </button>
+                  {responseMessage && (
+                    <p className="mt-4 text-gray-600">{responseMessage}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowAdjustButtons(false)}
+                  className="mt-4 w-full py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
 
           <button
             type="button" // Prevents form submission
             className="text-xs bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 w-[45%]"
-            onClick={() => setAdvancedSearch(true)} 
+            onClick={() => setAdvancedSearch(true)}
           >
             Advanced Search
           </button>
         </div>
         {/* Popup for advance */}
-      {advancedSearch && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md">
-            <h2 className="text-lg font-semibold text-gray-800">Advanced Search</h2>
-            
-             {/* Form Inputs */}
-           
-             <div className="mt-4 space-y-3">
-  {Object.keys(formData2).map((key) => {
-    
-    if (key === "limit" || key === "offset") return null;
+        {advancedSearch && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Advanced Search
+              </h2>
 
-    return (
-      <div key={key}>
-        <label
-          htmlFor={key}
-          className="block text-sm font-medium text-gray-700 capitalize"
-        >
-          {key.replace("_", " ")}
-        </label>
-        <input
-          type="text"
-          name={key}
-          value={formData2[key]}
-          onChange={handleChange2}
-          className="w-full border rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-400"
-        />
-      </div>
-    );
-  })}
-</div>
+              {/* Form Inputs */}
 
-            {/* Buttons */}
-            <div className="flex justify-end mt-4 space-x-2">
-              <button
-                onClick={() =>{setAdvancedSearch(false)}} // Close popup
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-              >
-                Close
-              </button>
-              <button
-              onClick={() => {
-                fetchResults();
-                setShowAdvanced(true);
-                setAdvancedSearch(false);
-                
-                
-              }}// Fetch data
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-              >
-                {loading ? "Loading..." : "Search"}
-              </button>
-            </div>
-            <div className="flex justify-end mt-4">
-              
+              <div className="mt-4 space-y-3">
+                {Object.keys(formData2).map((key) => {
+                  if (key === "limit" || key === "offset") return null;
+
+                  let labelText;
+                  if (key === "weight1") {
+                    labelText = "Weight for Customer Preference Match";
+                  } else if (key === "weight2") {
+                    labelText = "Weight for Vehicle Feature Score";
+                  } else if (key === "weight3") {
+                    labelText = "Weight for Sales Trend Score";
+                  } else if (key === "weight4") {
+                    labelText = "Weight for Inventory Score";
+                  } else {
+                    labelText = key.replace("_", " ");
+                  }
+
+                  return (
+                    <div key={key}>
+                      <label
+                        htmlFor={key}
+                        className="block text-sm font-medium text-gray-700 capitalize"
+                      >
+                        {labelText}
+                      </label>
+                      <input
+                        type="text"
+                        name={key}
+                        value={formData2[key]}
+                        onChange={handleChange2}
+                        className="w-full border rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-400"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end mt-4 space-x-2">
+                <button
+                  onClick={() => {
+                    setAdvancedSearch(false);
+                  }} // Close popup
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    fetchResults();
+                    setShowAdvanced(true);
+                    setAdvancedSearch(false);
+                  }} // Fetch data
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                >
+                  {loading ? "Loading..." : "Search"}
+                </button>
+              </div>
+              <div className="flex justify-end mt-4"></div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-       {/* Submit button */}
-       <button
-          type="submit" 
+        {/* Submit button */}
+        <button
+          type="submit"
           className="col-span-1 md:col-span-1 bg-gradient-to-r from-blue-500 to-purple-400 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          
-          
         >
           Search
         </button>
-
       </form>
-      
+
       {/* Results Table */}
       {console.log(showAdvanced)}
 
-     
-     
-      {results.length>0 && showAdvanced &&(
-              <div className="mt-6">
-                <h3 className="text-md font-medium text-gray-700">Results:</h3>
-                <table className="min-w-full border border-gray-300 mt-2">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      {Object.keys(results[0]).map((key) => (
-                        <th key={key} className="py-2 px-4 text-left text-sm font-medium text-gray-900">
-                          {key}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((result, index) => (
-                      <tr key={index} className="border-b">
-                        {Object.values(result).map((value, i) => (
-                          <td key={i} className="py-2 px-4 text-sm text-gray-700">
-                            {value}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-      
+      {results.length > 0 && showAdvanced && (
+        <div className="mt-6">
+          <h3 className="text-md font-medium text-gray-700">Results:</h3>
+          <table className="min-w-full border border-gray-300 mt-2">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                {Object.keys(results[0]).map((key) => (
+                  <th
+                    key={key}
+                    className="py-2 px-4 text-left text-sm font-medium text-gray-900"
+                  >
+                    {key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((result, index) => (
+                <tr key={index} className="border-b">
+                  {Object.values(result).map((value, i) => (
+                    <td key={i} className="py-2 px-4 text-sm text-gray-700">
+                      {value}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* DISPLAYED TABLE */}
       {!TopOfList && !showAdvanced && (
-  <div className="overflow-x-auto">
-    <table className="min-w-full table-auto border-collapse border border-gray-300">
-      <thead>
-        <tr className="bg-indigo-100">
-          {/* Table Headers */}
-          <th className="border border-gray-300 px-4 py-2">VIN</th>
-          <th className="border border-gray-300 px-4 py-2">Make</th>
-          <th className="border border-gray-300 px-4 py-2">Model</th>
-          <th className="border border-gray-300 px-4 py-2">Year</th>
-          <th className="border border-gray-300 px-4 py-2">Color</th>
-          <th className="border border-gray-300 px-4 py-2">Price</th>
-          <th className="border border-gray-300 px-4 py-2">Mileage</th>
-          <th className="border border-gray-300 px-4 py-2">Status</th>
-          <th className="border border-gray-300 px-4 py-2">Location ID</th>
-          <th className="border border-gray-300 px-4 py-2">Last Modified By</th>
-          <th className="border border-gray-300 px-4 py-2">Warranty ID</th>
-          <th className="border border-gray-300 px-4 py-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="bg-slate-50">
-        {cars.map((car) => (
-          <tr key={car.vin} className="hover:bg-indigo-50 text-center">
-            {/* Table Data */}
-            <td className="text-sm text-center bg-gradient-to-r from-black to-black bg-clip-text text-transparent border border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
-              <Link
-                href={{
-                  pathname: "/details",
-                  query: {
-                    make: car.make,
-                    model: car.model,
-                    year: car.year,
-                  },
-                }}
-              >
-                {car.vin}
-              </Link>
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.make === null ? "-" : car.make}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.model === null ? "-" : car.model}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.year === null ? "-" : car.year}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.color === null ? "-" : car.color}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.price === null ? "-" : "$" + car.price}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.mileage === null ? "-" : car.mileage}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.status === null ? "-" : car.status}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.locationid === null ? "-" : ""}
-              <Link
-                href={{
-                  pathname: "/location_detail",
-                  query: {
-                    locationid: car.locationid,
-                  },
-                }}
-              >
-                {car.locationid}
-              </Link>
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              <Link
-                href={{
-                  pathname: "/employees_details",
-                  query: {
-                    employeeid: car.lastmodifiedby,
-                  },
-                }}
-              >
-                {car.lastmodifiedby}
-              </Link>
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.warrantyid === null ? "-" : ""}
-              <Link
-                href={{
-                  pathname: "/waranties_details",
-                  query: {
-                    warrantyid: car.warrantyid,
-                  },
-                }}
-              >
-                {car.warrantyid}
-              </Link>
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2 gap-2 justify-center">
-              <button
-                onClick={() => handleEditClick(car)}
-                className="bg-blue-500 text-white px-5 py-1 rounded"
-              >
-                Edit
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-indigo-100">
+                {/* Table Headers */}
+                <th className="border border-gray-300 px-4 py-2">VIN</th>
+                <th className="border border-gray-300 px-4 py-2">Make</th>
+                <th className="border border-gray-300 px-4 py-2">Model</th>
+                <th className="border border-gray-300 px-4 py-2">Year</th>
+                <th className="border border-gray-300 px-4 py-2">Color</th>
+                <th className="border border-gray-300 px-4 py-2">Price</th>
+                <th className="border border-gray-300 px-4 py-2">Mileage</th>
+                <th className="border border-gray-300 px-4 py-2">Status</th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Location ID
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Last Modified By
+                </th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Warranty ID
+                </th>
+                <th className="border border-gray-300 px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-slate-50">
+              {cars.map((car) => (
+                <tr key={car.vin} className="hover:bg-indigo-50 text-center">
+                  {/* Table Data */}
+                  <td className="text-sm text-center bg-gradient-to-r from-black to-black bg-clip-text text-transparent border border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
+                    <Link
+                      href={{
+                        pathname: "/details",
+                        query: {
+                          make: car.make,
+                          model: car.model,
+                          year: car.year,
+                        },
+                      }}
+                    >
+                      {car.vin}
+                    </Link>
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.make === null ? "-" : car.make}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.model === null ? "-" : car.model}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.year === null ? "-" : car.year}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.color === null ? "-" : car.color}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.price === null ? "-" : "$" + car.price}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.mileage === null ? "-" : car.mileage}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.status === null ? "-" : car.status}
+                  </td>
+                  <td className="text-sm border bg-gradient-to-r from-black to-black bg-clip-text text-transparent border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
+                    {car.locationid === null ? "-" : ""}
+                    <Link
+                      href={{
+                        pathname: "/location_detail",
+                        query: {
+                          locationid: car.locationid,
+                        },
+                      }}
+                    >
+                      {car.locationid}
+                    </Link>
+                  </td>
+                  <td className="text-sm border bg-gradient-to-r from-black to-black bg-clip-text text-transparent border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
+                    <Link
+                      href={{
+                        pathname: "/employees_details",
+                        query: {
+                          employeeid: car.lastmodifiedby,
+                        },
+                      }}
+                    >
+                      {car.lastmodifiedby}
+                    </Link>
+                  </td>
+                  <td className="text-sm border bg-gradient-to-r from-black to-black bg-clip-text text-transparent border-gray-300 px-4 py-2 hover:from-purple-400 hover:to-blue-600">
+                    {car.warrantyid === null ? "-" : ""}
+                    <Link
+                      href={{
+                        pathname: "/waranties_details",
+                        query: {
+                          warrantyid: car.warrantyid,
+                        },
+                      }}
+                    >
+                      {car.warrantyid}
+                    </Link>
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2 gap-2 justify-center">
+                    <button
+                      onClick={() => handleEditClick(car)}
+                      className="bg-blue-500 text-white px-5 py-1 rounded"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-{TopOfList && !showAdvanced && (
-  <div className="overflow-x-auto">
-    <table className="min-w-full table-auto border-collapse border border-gray-300">
-      <thead>
-        <tr className="bg-indigo-100">
-          <th className="border border-gray-300 px-4 py-2">Make</th>
-          <th className="border border-gray-300 px-4 py-2">Model</th>
-          <th className="border border-gray-300 px-4 py-2">Year</th>
-          <th className="border border-gray-300 px-4 py-2">Average Rating</th>
-        </tr>
-      </thead>
-      <tbody className="bg-slate-50">
-        {cars.map((car) => (
-          <tr key={`${car.make}-${car.model}-${car.year}`} className="hover:bg-indigo-50 text-center">
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.make === null ? "-" : car.make}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.model === null ? "-" : car.model}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.year === null ? "-" : car.year}
-            </td>
-            <td className="text-sm border border-gray-300 px-4 py-2">
-              {car.averagerating === null ? "-" : car.averagerating}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
-
+      {TopOfList && !showAdvanced && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-indigo-100">
+                <th className="border border-gray-300 px-4 py-2">Make</th>
+                <th className="border border-gray-300 px-4 py-2">Model</th>
+                <th className="border border-gray-300 px-4 py-2">Year</th>
+                <th className="border border-gray-300 px-4 py-2">
+                  Average Rating
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-slate-50">
+              {cars.map((car) => (
+                <tr
+                  key={`${car.make}-${car.model}-${car.year}`}
+                  className="hover:bg-indigo-50 text-center"
+                >
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.make === null ? "-" : car.make}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.model === null ? "-" : car.model}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.year === null ? "-" : car.year}
+                  </td>
+                  <td className="text-sm border border-gray-300 px-4 py-2">
+                    {car.averagerating === null ? "-" : car.averagerating}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => setPage(Math.max(1, page - 1))}
-          className={`${
-            page <= 1 ? "pointer-events-none opacity-50" : ""
-          } text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300`}
-        >
-          &#8592;
-        </button>
-        <span className="text-sm font-bold px-3 py-1 mx-1">{page}</span>
-        <button
-          onClick={() => setPage(page + 1)}
-          className="text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300"
-        >
-          &#8594;
-        </button>
-      </div>
+
+      {!TopOfList && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            className={`${
+              page <= 1 ? "pointer-events-none opacity-50" : ""
+            } text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300`}
+          >
+            &#8592;
+          </button>
+          <span className="text-sm font-bold px-3 py-1 mx-1">{page}</span>
+          <button
+            onClick={() => setPage(page + 1)}
+            className="text-sm px-3 py-1 mx-1 border rounded bg-indigo-200 hover:bg-gray-300"
+          >
+            &#8594;
+          </button>
+        </div>
+      )}
 
       {/* Modal for Editing */}
 
@@ -934,7 +934,10 @@ export default function CarsPage() {
                     name={field.name}
                     value={createData[field.name]}
                     onChange={(e) =>
-                      setCreateData({ ...createData, [field.name]: e.target.value })
+                      setCreateData({
+                        ...createData,
+                        [field.name]: e.target.value,
+                      })
                     }
                     className="border px-2 py-1 w-full"
                   />

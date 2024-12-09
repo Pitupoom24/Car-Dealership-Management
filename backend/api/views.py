@@ -679,34 +679,34 @@ class AdvancedQueriesViewSet(viewsets.ViewSet):
             query += " AND c.vin=%s"
             parameters.append(vin)
         if color:
-            query += " AND color=%s"
+            query += " AND c.color=%s"
             parameters.append(color)
         if lower_price:
-            query += " AND price >= %s"
+            query += " AND c.price >= %s"
             parameters.append(lower_price)
         if higher_price:
-            query += " AND price <= %s"
+            query += " AND c.price <= %s"
             parameters.append(higher_price)
         if lower_mileage:
-            query += " AND mileage >= %s"
+            query += " AND c.mileage >= %s"
             parameters.append(lower_mileage)
         if higher_mileage:
-            query += " AND mileage <= %s"
+            query += " AND c.mileage <= %s"
             parameters.append(higher_mileage)
         if _status:
-            query += " AND status=%s"
+            query += " AND c.status=%s"
             parameters.append(_status)
         if locationid:
-            query += " AND locationid=%s"
+            query += " AND c.locationid=%s"
             parameters.append(locationid)
         if lastmodifiedby:
-            query += " AND lastmodifiedby=%s"
+            query += " AND c.lastmodifiedby=%s"
             parameters.append(lastmodifiedby)
         if lower_rating:
-            query += " AND averageRating >= %s"
+            query += " AND r.averageRating >= %s"
             parameters.append(lower_rating)
         if higher_rating:
-            query += " AND averageRating <= %s"
+            query += " AND r.averageRating <= %s"
             parameters.append(higher_rating)
 
         query += f" LIMIT {limit}"
