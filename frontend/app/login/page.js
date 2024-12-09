@@ -3,18 +3,15 @@
 import { useState, useEffect } from "react";
 
 export default function LoginPage() {
-
   const [employeeID, setEmployeeID] = useState(""); // State for employee ID
   const [password, setPassword] = useState(""); // State for password
   const [errorMessage, setErrorMessage] = useState(""); // State for any error messages
   const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
-  const [verifiedEmployeeID, setVerifiedEmployeeID] = useState(null)
+  const [verifiedEmployeeID, setVerifiedEmployeeID] = useState(null);
 
-    useEffect(() => {
+  useEffect(() => {
     setIsLoggedIn(false);
   }, []);
-
-
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -30,29 +27,13 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
 
-
-
         if (data.is_valid === 1) {
-
-
-
-        sessionStorage.setItem('current_employee_id', data.employeeid);
-        sessionStorage.setItem('is_currently_logged_in', true);
-        window.location.href = '/';
-
-
-
-             
-
-   
-
-
+          sessionStorage.setItem("current_employee_id", data.employeeid);
+          sessionStorage.setItem("is_currently_logged_in", true);
+          window.location.href = "/";
         } else {
           setErrorMessage("Invalid credentials, please try again.");
         }
-
-
-
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.detail || "Login failed.");
@@ -62,7 +43,6 @@ export default function LoginPage() {
       console.error("Error during login:", error);
     }
   };
-
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -134,16 +114,6 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-
-        <p className="mt-10 text-center text-sm text-gray-500">
-          New to this website?{" "}
-          <a
-            href="#"
-            className="font-semibold text-indigo-600 hover:text-indigo-500"
-          >
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );
