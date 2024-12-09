@@ -6,8 +6,6 @@ import { useSearchParams } from "next/navigation";
 export default function DetailsPage() {
   const searchParams = useSearchParams();
 
-
-
   const warrantyid = searchParams.get("warrantyid");
 
   // State for storing the car details
@@ -17,7 +15,6 @@ export default function DetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   const fetchWarrantyDetail = async () => {
     setLoading(true);
     const apiURL_details = `http://127.0.0.1:8000/api/warranties/retrieve_by_warrantyid/?warrantyid=${warrantyid}`;
@@ -28,8 +25,6 @@ export default function DetailsPage() {
         return; // no details
       }
       const data = await response.json();
-      
-      
 
       setwarrantyDetail(data); // Store the fetched data
     } catch (err) {
@@ -39,12 +34,8 @@ export default function DetailsPage() {
     }
   };
 
-
-
-
   useEffect(() => {
     fetchWarrantyDetail();
-   
   }, [warrantyid]); // Re-run the effect if any parameter changes
 
   if (loading) {
@@ -66,21 +57,21 @@ export default function DetailsPage() {
             <div
               key={car.warrantyid}
               className="mx-28 bg-gradient-to-r from-purple-200 to-purple-400 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-
             >
               <p className="text-xl font-semibold">
-              Warranty ID:{" "}
+                Warranty ID:{" "}
                 <span className="font-normal">{car.warrantyid}</span>
               </p>
               <p className="text-xl font-semibold">
-                start date:{" "}
-                <span className="font-normal">{car.enddate}</span>
+                Start date: <span className="font-normal">{car.startdate}</span>
               </p>
               <p className="text-xl font-semibold">
-              end detail:{" "}
+                End date: <span className="font-normal">{car.enddate}</span>
+              </p>
+              <p className="text-xl font-semibold">
+                Detail:{" "}
                 <span className="font-normal">{car.coveragedetail}</span>
               </p>
-              
             </div>
           ))
         ) : (
@@ -90,10 +81,7 @@ export default function DetailsPage() {
         )}
       </div>
 
-      <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-green-800 to-green-400 bg-clip-text text-transparent mt-20 mb-6">
-       
-      </h1>
-      
+      <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-green-800 to-green-400 bg-clip-text text-transparent mt-20 mb-6"></h1>
     </div>
   );
 }
